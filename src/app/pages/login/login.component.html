@@ -1,0 +1,30 @@
+<div class="container mt-5">
+  <h2>Iniciar Sesión</h2>
+
+  <!-- Alerta de error -->
+  <div *ngIf="errorMensaje" class="alert alert-danger">
+    {{ errorMensaje }}
+  </div>
+
+  <form (submit)="login()">
+    <div class="mb-3">
+      <label>Email:</label>
+      <input
+        [(ngModel)]="email"
+        name="email"
+        type="email"
+        class="form-control"
+      />
+    </div>
+    <div class="mb-3">
+      <label>Contraseña:</label>
+      <input
+        [(ngModel)]="password"
+        name="password"
+        type="password"
+        class="form-control"
+      />
+    </div>
+    <button class="btn btn-success">Ingresar</button>
+  </form>
+</div>

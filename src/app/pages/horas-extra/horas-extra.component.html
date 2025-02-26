@@ -1,0 +1,199 @@
+<div class="container mt-5">
+  <h2>Registrar Horas Extra</h2>
+
+  <!-- Mensaje de éxito o error -->
+  <div *ngIf="mensaje" class="alert alert-info">{{ mensaje }}</div>
+
+  <form (submit)="registrarHoras()">
+    <div class="mb-3">
+      <label>Fecha:</label>
+      <input
+        [(ngModel)]="fecha"
+        name="fecha"
+        type="date"
+        class="form-control"
+      />
+    </div>
+    <div class="mb-3">
+      <label>Proyecto:</label>
+      <select [(ngModel)]="id_proyecto" name="id_proyecto" class="form-control">
+        <option [value]="null" disabled selected>Seleccione un proyecto</option>
+        <option *ngFor="let proyecto of proyectos" [value]="proyecto.id">
+          {{ proyecto.nombre }}
+        </option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Hora de Inicio:</label>
+      <input
+        [(ngModel)]="horaInicio"
+        name="horaInicio"
+        type="time"
+        class="form-control"
+      />
+    </div>
+    <div class="mb-3">
+      <label>Hora de Fin:</label>
+      <input
+        [(ngModel)]="horaFin"
+        name="horaFin"
+        type="time"
+        class="form-control"
+      />
+    </div>
+    <div class="mb-3">
+      <label>Descripción:</label>
+      <textarea
+        [(ngModel)]="descripcion"
+        name="descripcion"
+        class="form-control"
+      ></textarea>
+    </div>
+    <button class="btn btn-primary">Registrar</button>
+  </form>
+</div>
+<div class="container mt-5">
+  <h2>Horas Extra Registradas</h2>
+
+  <!-- Filtros -->
+  <div class="row mb-3">
+    <div class="col">
+      <input
+        [(ngModel)]="filtroFecha"
+        type="date"
+        class="form-control"
+        placeholder="Filtrar por fecha"
+      />
+    </div>
+    <div class="col">
+      <select [(ngModel)]="filtroEstado" class="form-control">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="aprobado">Aprobado</option>
+        <option value="rechazado">Rechazado</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tabla de Horas Extra -->
+  <table class="table table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Proyecto</th>
+        <th>Hora Inicio</th>
+        <th>Hora Fin</th>
+        <th>Total Horas</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="
+          let hora of horasExtra
+            | filterFecha : filtroFecha
+            | filterEstado : filtroEstado
+        "
+      >
+        <td>{{ hora.fecha | date : "yy-MM-dd" }}</td>
+        <td>{{ hora.usuario_completo }}</td>
+        <td>{{ hora.proyecto_completo }}</td>
+        <td>{{ hora.hora_inicio }}</td>
+        <td>{{ hora.hora_fin }}</td>
+        <td>{{ hora.total_horas }}</td>
+        <td>{{ hora.descripcion }}</td>
+        <td>
+          <span
+            [ngClass]="{
+              'badge bg-warning': hora.estado === 'pendiente',
+              'badge bg-success': hora.estado === 'aprobado',
+              'badge bg-danger': hora.estado === 'rechazado'
+            }"
+          >
+            {{ hora.estado }}
+          </span>
+        </td>
+        <td>
+          <button
+            class="btn btn-sm btn-primary"
+            (click)="editarHoraExtra(hora)"
+          >
+            Editar
+          </button>
+          <button
+            class="btn btn-sm btn-danger"
+            (click)="eliminarHoraExtra(hora.id)"
+          >
+            Eliminar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-end mb-3">
+    <button class="btn btn-success me-2" (click)="exportarExcel()">
+      📊 Exportar Excel
+    </button>
+    <button class="btn btn-danger" (click)="exportarPDF()">
+      📄 Exportar PDF
+    </button>
+  </div>
+</div>
+<div *ngIf="horaSeleccionada" class="card p-3">
+  <h3>Editar Hora Extra</h3>
+
+  <div class="mb-3">
+    <label>Fecha:</label>
+    <input
+      [(ngModel)]="horaSeleccionada.fecha"
+      type="date"
+      class="form-control"
+    />
+  </div>
+
+  <div class="mb-3">
+    <label>Hora de Inicio:</label>
+    <input
+      [(ngModel)]="horaSeleccionada.hora_inicio"
+      (change)="recalcularHoras()"
+      type="time"
+      class="form-control"
+    />
+  </div>
+
+  <div class="mb-3">
+    <label>Hora de Fin:</label>
+    <input
+      [(ngModel)]="horaSeleccionada.hora_fin"
+      (change)="recalcularHoras()"
+      type="time"
+      class="form-control"
+    />
+  </div>
+
+  <div class="mb-3">
+    <label>Descripción:</label>
+    <input
+      [(ngModel)]="horaSeleccionada.descripcion"
+      type="text"
+      class="form-control"
+    />
+  </div>
+
+  <div class="mb-3">
+    <label>Estado:</label>
+    <select [(ngModel)]="horaSeleccionada.estado" class="form-control">
+      <option value="pendiente">Pendiente</option>
+      <option value="aprobado">Aprobado</option>
+      <option value="rechazado">Rechazado</option>
+    </select>
+  </div>
+
+  <button class="btn btn-success" (click)="guardarEdicion()">Guardar</button>
+  <button class="btn btn-secondary" (click)="cancelarEdicion()">
+    Cancelar
+  </button>
+</div>

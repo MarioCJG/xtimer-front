@@ -1,0 +1,40 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/">XTimer</a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+            {{ usuario }}
+        </a>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            (click)="linkHorasExtra()"
+            routerLink="/horas-extra"
+            >Horas Extra</a
+          >
+        </li>
+        <li class="nav-item" *ngIf="esAdmin">
+          <a            
+            class="nav-link"
+            (click)="linkAprobaciones()"
+            routerLink="/aprobaciones"
+            >Aprobaciones</a
+          >
+        </li>
+        <button class="btn btn-danger" (click)="logout()">Cerrar Sesión</button>
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,29 @@
+<div class="container mt-5">
+    <h2>Panel de Aprobaciones</h2>
+
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Fecha</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
+                <th>Total Horas</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let hora of horasPendientes">
+                <td>{{ hora.fecha | date : "yy-MM-dd" }}</td>
+                <td>{{ hora.hora_inicio }}</td>
+                <td>{{ hora.hora_fin }}</td>
+                <td>{{ hora.total_horas }}</td>
+                <td>{{ hora.descripcion }}</td>
+                <td>
+                    <button class="btn btn-success btn-sm" (click)="aprobarHoraExtra(hora.id)">Aprobar</button>
+                    <button class="btn btn-danger btn-sm" (click)="rechazarHoraExtra(hora.id)">Rechazar</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,7 @@
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title">{{ titulo }}</h5>
+        <p class="card-text">{{ contenido }}</p>
+        <button *ngIf="botonTexto" class="btn btn-primary" (click)="accion()">{{ botonTexto }}</button>
+    </div>
+</div>
