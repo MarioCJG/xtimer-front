@@ -1,70 +1,181 @@
 <div class="container mt-5">
-  <h2>Registrar Horas Extra</h2>
+  <h2>Registrar Horas</h2>
 
-  <!-- Mensaje de éxito o error -->
-  <div *ngIf="mensaje" class="alert alert-info">{{ mensaje }}</div>
 
-  <form (submit)="registrarHoras()">
+
+  <!-- Botones para los meses -->
+  <div class="d-flex justify-content-start mb-3">
+    <button class="btn"
+      [ngClass]="{ 'btn-primary': mesSeleccionado === mesAnterior, 'btn-light': mesSeleccionado !== mesAnterior }"
+      (click)="seleccionarMesAnterior()">
+      {{ mesAnterior }}
+    </button>
+    <button class="btn me-2"
+      [ngClass]="{ 'btn-primary': mesSeleccionado === mesActual, 'btn-light': mesSeleccionado !== mesActual }"
+      (click)="seleccionarMesActual()">
+      {{ mesActual }}
+    </button>
+  </div>
+
+  <!-- Botones para las semanas -->
+  <div class="mt-3">
+    <h3 *ngIf="mesSeleccionado">Semanas del mes:</h3>
+    <div class="d-flex flex-wrap">
+      <button *ngFor="let semana of semanas; let i = index" class="btn me-2 mb-2"
+        [ngClass]="{ 'btn-primary': semanaSeleccionada === i, 'btn-light': semanaSeleccionada !== i }"
+        (click)="mostrarDiasSemana(i)">
+        Semana {{ i + 1 }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Botones para los días de la semana seleccionada -->
+  <div class="mt-3" *ngIf="diasSeleccionados.length > 0">
+    <h3>Días de la semana seleccionada:</h3>
+    <div class="d-flex flex-wrap">
+      <button *ngFor="let dia of diasSeleccionados" class="btn me-2 mb-2"
+        [ngClass]="{ 'btn-primary': diaSeleccionado === dia.dia, 'btn-light': diaSeleccionado !== dia.dia }"
+        (click)="seleccionarDia(dia)">
+        {{ dia.nombre }} {{ dia.dia }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Campo para mostrar la fecha seleccionada -->
+  <div class="mt-3" *ngIf="fechaSeleccionada">
+    <h4>Fecha seleccionada: {{ fechaSeleccionada }}</h4>
+  </div>
+
+  <div class="calendar-container">
+    <h3>Calendario del Mes: {{ mesSeleccionado }}</h3>
+    <table class="calendar">
+      <thead>
+        <tr>
+          <th *ngFor="let dia of ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']">{{ dia }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let semana of semanas">
+          <td *ngFor="let dia of semana" (click)="seleccionarFecha(dia)" [ngClass]="{
+                        'selected': dia === diaSeleccionado,
+                        'highlight-green': getColorParaFecha(dia) === 'verde',
+                        'highlight-naranjo': getColorParaFecha(dia) === 'naranjo',
+                        'highlight-celeste': getColorParaFecha(dia) === 'celeste',
+                        'highlight-rojo': getColorParaFecha(dia) === 'rojo',
+                        'highlight-white': getColorParaFecha(dia) === 'blanco'
+                    }">
+            <div *ngIf="dia">{{ dia }}</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+<!-- Lista desplegable de clientes -->
+<div class="container mt-3">
+  <label for="clienteSeleccionado" class="form-label">Seleccionar Cliente:</label>
+  <select id="clienteSeleccionado" class="form-select" [(ngModel)]="clienteSeleccionado" (change)="filtrarProyectosPorCliente()">
+    <option value="">Todos los Clientes</option>
+    <option *ngFor="let cliente of clientes" [value]="cliente.nombre_cliente">
+      {{ cliente.nombre_cliente }}
+    </option>
+  </select>
+</div>
+
+  <!-- Cuadrícula de selección -->
+  <div class="container mt-5" *ngIf="fechaSeleccionada">
+    <h2>Cuadrícula de Selección</h2>
+    <div class="table-responsive">
+      <!-- Fila de títulos -->
+      <div class="row">
+        <div class="cell title-left">
+          Proyectos
+        </div>
+        <div *ngFor="let horario of horarios" class="cell title-cell">
+          {{ horario }}
+        </div>
+      </div>
+
+      <!-- Filas de proyectos y celdas seleccionables -->
+      <div *ngFor="let proyecto of proyectosFiltrados; let rowIndex = index" class="row">
+        <!-- Columna de proyectos -->
+        <div class="cell left-cell" (click)="seleccionarProyecto(proyecto)">
+          {{ proyecto.nombre_proyecto }}
+        </div>
+        <!-- Celdas seleccionables -->
+        <div *ngFor="let cell of grid[rowIndex]; let colIndex = index" class="cell selectable-cell" [ngClass]="{
+           'selected': cell.selected && !(colIndex === 0 || colIndex === 1 || colIndex >= 20),
+           'highlight-yellow': cell.selected && (colIndex === 0 || colIndex === 1 || colIndex >= 20)
+        }" (mousedown)="onMouseDown($event, rowIndex, colIndex)" (mouseover)="onMouseOver(rowIndex, colIndex)"
+          (mouseup)="onMouseUp()">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="mt-3" *ngIf="fechaSeleccionada">
+      <h4>Horas del día: {{ calcularTotalHorasDelDia().total }}</h4>
+      <h4 *ngIf="calcularTotalHorasDelDia().extras !== '00:00'">Horas extra: {{ calcularTotalHorasDelDia().extras }}
+      </h4>
+    </div>
+
+    <div class="mt-3 d-flex justify-content-end">
+      <button class="btn btn-success" (click)="guardar()">Guardar</button>
+    </div>
+
+  </div>
+
+  <!-- Mensaje de éxito o error
+  <div *ngIf="mensaje" class="alert alert-info">{{ mensaje }}</div> -->
+
+  <!-- <form (submit)="registrarHoras()">
     <div class="mb-3">
       <label>Fecha:</label>
-      <input
-        [(ngModel)]="fecha"
-        name="fecha"
-        type="date"
-        class="form-control"
-      />
+      <input [(ngModel)]="fecha" name="fecha" type="date" class="form-control" />
     </div>
     <div class="mb-3">
       <label>Proyecto:</label>
-      <select [(ngModel)]="id_proyecto" name="id_proyecto" class="form-control">
-        <option [value]="null" disabled selected>Seleccione un proyecto</option>
-        <option *ngFor="let proyecto of proyectos" [value]="proyecto.id">
+      <select [(ngModel)]="id_proyecto" name="proyecto" required>
+        <option *ngFor="let proyecto of proyectos" [value]="proyecto.id_asignacion">
           {{ proyecto.nombre }}
         </option>
       </select>
     </div>
+
     <div class="mb-3">
       <label>Hora de Inicio:</label>
-      <input
-        [(ngModel)]="horaInicio"
-        name="horaInicio"
-        type="time"
-        class="form-control"
-      />
+      <input [(ngModel)]="horaInicio" name="horaInicio" type="time" class="form-control" />
     </div>
     <div class="mb-3">
       <label>Hora de Fin:</label>
-      <input
-        [(ngModel)]="horaFin"
-        name="horaFin"
-        type="time"
-        class="form-control"
-      />
+      <input [(ngModel)]="horaFin" name="horaFin" type="time" class="form-control" />
     </div>
     <div class="mb-3">
       <label>Descripción:</label>
-      <textarea
-        [(ngModel)]="descripcion"
-        name="descripcion"
-        class="form-control"
-      ></textarea>
+      <textarea [(ngModel)]="descripcion" name="descripcion" class="form-control"></textarea>
     </div>
     <button class="btn btn-primary">Registrar</button>
-  </form>
+  </form> -->
 </div>
 <div class="container mt-5">
-  <h2>Horas Extra Registradas</h2>
+  <h2>Horas Registradas</h2>
 
   <!-- Filtros -->
   <div class="row mb-3">
     <div class="col">
-      <input
-        [(ngModel)]="filtroFecha"
-        type="date"
-        class="form-control"
-        placeholder="Filtrar por fecha"
-      />
+      <label for="fechaDesde">Desde:</label>
+      <input id="fechaDesde" type="date" class="form-control" placeholder="Fecha desde" [(ngModel)]="fechaDesde"
+        (change)="onFechaDesdeChange()" />
     </div>
+    <div class="col">
+      <label for="fechaHasta">Hasta:</label>
+      <input id="fechaHasta" type="date" class="form-control" placeholder="Fecha hasta" [(ngModel)]="fechaHasta"
+        (change)="onFechaHastaChange()" />
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mb-3">
     <div class="col">
       <select [(ngModel)]="filtroEstado" class="form-control">
         <option value="">Todos los estados</option>
@@ -91,13 +202,11 @@
       </tr>
     </thead>
     <tbody>
-      <tr
-        *ngFor="
-          let hora of horasExtra
+      <tr *ngFor="
+          let hora of horasExtraFiltradas
             | filterFecha : filtroFecha
             | filterEstado : filtroEstado
-        "
-      >
+        ">
         <td>{{ hora.fecha | date : "yy-MM-dd" }}</td>
         <td>{{ hora.usuario_completo }}</td>
         <td>{{ hora.proyecto_completo }}</td>
@@ -106,27 +215,19 @@
         <td>{{ hora.total_horas }}</td>
         <td>{{ hora.descripcion }}</td>
         <td>
-          <span
-            [ngClass]="{
+          <span [ngClass]="{
               'badge bg-warning': hora.estado === 'pendiente',
               'badge bg-success': hora.estado === 'aprobado',
               'badge bg-danger': hora.estado === 'rechazado'
-            }"
-          >
+            }">
             {{ hora.estado }}
           </span>
         </td>
         <td>
-          <button
-            class="btn btn-sm btn-primary"
-            (click)="editarHoraExtra(hora)"
-          >
+          <button class="btn btn-sm btn-primary" (click)="editarHoraExtra(hora)">
             Editar
           </button>
-          <button
-            class="btn btn-sm btn-danger"
-            (click)="eliminarHoraExtra(hora.id)"
-          >
+          <button class="btn btn-sm btn-danger" (click)="eliminarHoraExtra(hora.id)">
             Eliminar
           </button>
         </td>
@@ -145,45 +246,27 @@
 <div *ngIf="horaSeleccionada" class="card p-3">
   <h3>Editar Hora Extra</h3>
 
-  <div class="mb-3">
+  <!-- <div class="mb-3">
     <label>Fecha:</label>
-    <input
-      [(ngModel)]="horaSeleccionada.fecha"
-      type="date"
-      class="form-control"
-    />
+    <input [(ngModel)]="horaSeleccionada.fecha" type="date" class="form-control" />
   </div>
 
   <div class="mb-3">
     <label>Hora de Inicio:</label>
-    <input
-      [(ngModel)]="horaSeleccionada.hora_inicio"
-      (change)="recalcularHoras()"
-      type="time"
-      class="form-control"
-    />
+    <input [(ngModel)]="horaSeleccionada.hora_inicio" (change)="recalcularHoras()" type="time" class="form-control" />
   </div>
 
   <div class="mb-3">
     <label>Hora de Fin:</label>
-    <input
-      [(ngModel)]="horaSeleccionada.hora_fin"
-      (change)="recalcularHoras()"
-      type="time"
-      class="form-control"
-    />
+    <input [(ngModel)]="horaSeleccionada.hora_fin" (change)="recalcularHoras()" type="time" class="form-control" />
   </div>
 
   <div class="mb-3">
     <label>Descripción:</label>
-    <input
-      [(ngModel)]="horaSeleccionada.descripcion"
-      type="text"
-      class="form-control"
-    />
-  </div>
+    <input [(ngModel)]="horaSeleccionada.descripcion" type="text" class="form-control" />
+  </div> -->
 
-  <div class="mb-3">
+  <!-- <div class="mb-3">
     <label>Estado:</label>
     <select [(ngModel)]="horaSeleccionada.estado" class="form-control">
       <option value="pendiente">Pendiente</option>
@@ -195,5 +278,5 @@
   <button class="btn btn-success" (click)="guardarEdicion()">Guardar</button>
   <button class="btn btn-secondary" (click)="cancelarEdicion()">
     Cancelar
-  </button>
+  </button> -->
 </div>

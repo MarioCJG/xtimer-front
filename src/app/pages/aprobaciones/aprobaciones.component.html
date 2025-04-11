@@ -4,6 +4,8 @@
     <table class="table table-bordered">
         <thead class="table-dark">
             <tr>
+                <th>Usuario</th>
+                <th>Proyecto</th>
                 <th>Fecha</th>
                 <th>Hora Inicio</th>
                 <th>Hora Fin</th>
@@ -14,7 +16,9 @@
         </thead>
         <tbody>
             <tr *ngFor="let hora of horasPendientes">
-                <td>{{ hora.fecha | date : "yy-MM-dd" }}</td>
+                <td>{{ hora.usuario_completo }}</td>
+                <td>{{ hora.proyecto_completo }}</td>
+                <td>{{ hora.fecha | date }}</td>
                 <td>{{ hora.hora_inicio }}</td>
                 <td>{{ hora.hora_fin }}</td>
                 <td>{{ hora.total_horas }}</td>

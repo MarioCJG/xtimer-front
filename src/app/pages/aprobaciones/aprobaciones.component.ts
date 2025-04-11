@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AprobacionesComponent {
     horasPendientes: any[] = [];
+    idAprobador: number = 1; // Aquí debes obtener dinámicamente el ID del usuario autenticado
 
     constructor(private horasExtraService: HorasExtraService) { }
 
@@ -28,43 +29,24 @@ export class AprobacionesComponent {
     }
 
     aprobarHoraExtra(id: number) {
-        const hora = this.horasPendientes.find(h => h.id === id);
-        if (hora) {
-            this.actualizarEstadoHoraExtra(hora, 'aprobado');
-        } else {
-            console.error('❌ No se encontró la hora extra para aprobar.');
-        }
+        this.actualizarEstadoHoraExtra(id, 'aprobado');
     }
 
     rechazarHoraExtra(id: number) {
-        const hora = this.horasPendientes.find(h => h.id === id);
-        if (hora) {
-            this.actualizarEstadoHoraExtra(hora, 'rechazado');
-        } else {
-            console.error('❌ No se encontró la hora extra para rechazar.');
-        }
+        this.actualizarEstadoHoraExtra(id, 'rechazado');
     }
 
-
-    actualizarEstadoHoraExtra(hora: any, nuevoEstado: string) {
-        const datosActualizados = {
-            id: hora.id,
-            id_usuario: hora.id_usuario,
-            id_proyecto: hora.id_proyecto,
-            fecha: hora.fecha,
-            hora_inicio: hora.hora_inicio,
-            hora_fin: hora.hora_fin,
-            total_horas: hora.total_horas,
-            descripcion: hora.descripcion,
-            estado: nuevoEstado // Solo cambia el estado
-        };
-
-        this.horasExtraService.actualizarEstado(datosActualizados).subscribe(
+    actualizarEstadoHoraExtra(id: number, nuevoEstado: string) {
+        this.horasExtraService.actualizarEstado(id, nuevoEstado, this.idAprobador).subscribe(
             res => {
-                this.cargarHorasPendientes(); // Recargar lista
+                console.log(`✅ Hora extra marcada como ${nuevoEstado}:`, res);
+                this.cargarHorasPendientes(); // Recargar lista de horas pendientes
             },
             err => { console.error(`❌ Error al cambiar estado a ${nuevoEstado}:`, err); }
         );
     }
 
+    
+
+    
 }

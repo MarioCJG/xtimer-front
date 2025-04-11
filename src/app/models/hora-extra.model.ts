@@ -8,12 +8,13 @@ export interface HorasExtra {
     estado: string;
     id_usuario: number;
     id_proyecto: number;
-    
+
     // 🆕 NUEVAS PROPIEDADES:
+    id_aprobador?: number | null;        // ID del usuario que aprueba o rechaza
     usuario_nombre?: string;
     usuario_apellido?: string;
-    usuario_completo?: string;   // Concatenado en el frontend
+    usuario_completo?: string;    // Concatenado en el frontend
     proyecto_nombre?: string;
     cliente_nombre?: string;
-    proyecto_completo?: string;  // Concatenado en el frontend
+    proyecto_completo?: string;   // Concatenado en el frontend
 }

@@ -1,0 +1,154 @@
+/* Contenedor principal */
+.container {
+  width: fit-content;
+  margin: auto;
+}
+
+/* Cuadrícula de Títulos */
+.grid-titles {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #ccc;
+}
+
+.grid-titles .row {
+  display: flex;
+}
+
+.title-left {
+  width: 150px; /* Ancho de la columna de proyectos */
+  font-weight: bold;
+  background-color: #eaeaea;
+  text-align: center;
+  border-right: 1px solid #ccc;
+}
+
+.title-cell {
+  width: 80px; /* Ancho de las columnas de horarios */
+  font-weight: bold;
+  background-color: #eaeaea;
+  text-align: center;
+  border-right: 1px solid #ccc;
+}
+
+/* Cuadrícula de Datos */   
+.grid-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-data .row {
+  display: flex;
+}
+
+.left-cell {
+  width: 150px; /* Ancho de la columna de proyectos */
+  background-color: #f9f9f9;
+  font-weight: bold;
+  text-align: left;
+  padding-left: 5px;
+  border-right: 1px solid #ccc;
+}
+
+.selectable-cell {
+  width: 40px; /* Ancho de las columnas seleccionables */
+  background-color: white;
+  cursor: pointer;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.selectable-cell.selected {
+  background-color: rgb(132, 255, 132);
+}
+
+.title-cell, .left-cell {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Estilo para las celdas seleccionadas normalmente */
+.cell.selected {
+  background-color: rgb(0, 163, 0); /* Cambia esto al color que usas normalmente */
+  color: white;
+}
+
+/* Estilo para las celdas seleccionadas en las columnas 0, 1 y >= 20 */
+.cell.highlight-yellow {
+  background-color:rgb(132, 255, 132);
+  color: black;
+}
+
+.calendar-container {
+    margin: 5px 0; /* Reducir el margen */
+    text-align: center;
+}
+
+.calendar {
+    width: 25%; /* Reducir el ancho del calendario */
+    border-collapse: collapse;
+    margin: 0 auto;
+    font-size: 12px; /* Ajustar el tamaño del texto general */
+}
+
+.calendar th,
+.calendar td {
+    border: 1px solid #ddd;
+    width: 12%; /* Reducir el ancho proporcional para 7 días */
+    height: 25px; /* Reducir la altura de las celdas */
+    text-align: center;
+    vertical-align: middle;
+    padding: 2px; /* Reducir el relleno interno */
+}
+
+.calendar th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    font-size: 12px; /* Aumentar ligeramente el tamaño del texto en los encabezados */
+}
+
+.calendar td {
+    background-color: #fff;
+}
+
+.calendar td div {
+    font-size: 14px; /* Aumentar el tamaño del texto en las celdas */
+    font-weight: bold; /* Hacer los números más destacados */
+}
+
+.calendar td.selected {
+  border: 3px solid rgb(0, 0, 0); /* Borde grueso para la celda seleccionada */
+  font-weight: bold;
+  color: black;
+}
+
+.calendar td.highlight-rojo {
+    background-color: rgb(255, 0, 0); /* Color naranja */
+    font-weight: bold;
+    color: black;
+}
+
+.calendar td.highlight-green {
+    background-color: rgb(132, 255, 132); /* Color verde */
+    font-weight: bold;
+    color: black;
+}
+
+.calendar td.highlight-naranjo {
+    background-color: rgb(255, 136, 0); /* Color morado */
+    font-weight: bold;
+    color: white;
+}
+
+.calendar td.highlight-celeste {
+    background-color: rgb(0, 191, 255); /* Color celeste */
+    font-weight: bold;
+    color: black;
+}
+
+.calendar td.highlight-white {
+    background-color: white; /* Color blanco */
+    font-weight: normal;
+    color: black;
+}

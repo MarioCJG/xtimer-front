@@ -25,7 +25,7 @@ export class LoginComponent {
         this.authService.login({ email: this.email, password: this.password }).subscribe(
             res => {
                 this.authService.guardarToken(res.token);
-                this.router.navigate(['/horas-extra']);
+                // this.router.navigate(['/horas-extra']);
                 this.actualizarUsuario();
             },
             err => {
@@ -40,7 +40,18 @@ export class LoginComponent {
             usuarioData => {
                 if (usuarioData) {
                     this.usuario = `${usuarioData.nombre} ${usuarioData.apellido}`;
-                    this.esAdmin = usuarioData.rol === 'admin';
+                    this.esAdmin = usuarioData.rol === 'Administrador';
+
+                    // console.log('Información del usuario:', usuarioData);
+    
+                    // Redirigir al cambio de contraseña si no tiene fecha de cambio de contraseña
+                    if (!usuarioData.fecha_cambio_password) {
+                        console.log('El usuario no ha cambiado su contraseña. Redirigiendo a cambio-password...');
+                        this.router.navigate(['/cambio-password']);
+                    } else {
+                        console.log('Fecha de cambio de contraseña:', usuarioData.fecha_cambio_password);
+                        this.router.navigate(['/horas-extra']);
+                    }
                 } else {
                     this.usuario = 'Invitado';
                     this.esAdmin = false;

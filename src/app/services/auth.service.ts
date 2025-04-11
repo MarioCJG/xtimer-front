@@ -40,13 +40,16 @@ export class AuthService {
         try {
             const payload: any = JSON.parse(atob(token.split('.')[1])); // Decodificar JWT
             const userId = payload.id; // Obtener ID del usuario desde el token
-            console.log('ID del usuario:', userId);
+            // console.log('ID del usuario:', userId);
             return this.usuariosService.getUsuarioById(userId).pipe(
                 map(usuario => {
+                    // console.log('Información del usuario:', usuario);
                     return {
                         nombre: usuario.nombre,
                         apellido: usuario.apellido,
-                        rol: usuario.rol
+                        rol: usuario.rol,
+                        fecha_cambio_password: usuario.fecha_cambio_password,
+                        id: userId
                     };
                 }),
                 catchError(error => {
@@ -73,4 +76,9 @@ export class AuthService {
     estaAutenticado(): boolean {
         return !!this.obtenerToken();
     }
+
+    cambiarPassword(data: { id_usuario: number; nuevaPassword: string }) {
+        return this.http.post('http://localhost:3000/api/auth/cambiar-password', data);
+    }
+
 }

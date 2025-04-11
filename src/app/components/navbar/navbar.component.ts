@@ -12,6 +12,7 @@ import { NgIf } from '@angular/common';
 export class NavbarComponent implements OnInit {
     usuario: string = '';
     esAdmin: boolean = false;
+    cargandoUsuario: boolean = true; 
 
     constructor(private authService: AuthService, private router: Router) { }
 
@@ -20,12 +21,17 @@ export class NavbarComponent implements OnInit {
         this.authService.obtenerUsuario().subscribe(
             usuarioData => {
                 this.usuario = `${usuarioData.nombre} ${usuarioData.apellido}`;
-                this.esAdmin = usuarioData.rol === 'admin';
+                this.esAdmin = usuarioData.rol === 'Administrador';
             },
             error => {
                 console.error('Error obteniendo el usuario:', error);
             }
         );
+    }
+
+    // Método para verificar si la ruta actual es '/login'
+    esLogin(): boolean {
+        return this.router.url === '/login';
     }
 
     logout() {
@@ -41,19 +47,25 @@ export class NavbarComponent implements OnInit {
         this.router.navigate(['/aprobaciones']);
     }
 
+    linkAdmin() {
+        this.router.navigate(['/admin']);
+    }
+
     actualizarUsuario() {
         this.authService.obtenerUsuario().subscribe(
             usuarioData => {
                 if (usuarioData) {
                     this.usuario = `${usuarioData.nombre} ${usuarioData.apellido}`;
-                    this.esAdmin = usuarioData.rol === 'admin';
+                    this.esAdmin = usuarioData.rol === 'Administrador';
                 } else {
                     this.usuario = 'Invitado';
                     this.esAdmin = false;
                 }
+                this.cargandoUsuario = false; // Datos cargados
             },
             error => {
                 console.error('Error obteniendo el usuario:', error);
+                this.cargandoUsuario = false; // Finalizar la carga incluso si hay error
             }
         );
     }
