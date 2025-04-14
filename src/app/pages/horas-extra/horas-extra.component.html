@@ -1,4 +1,14 @@
 <div class="container mt-5">
+  <div class="modo-switch d-flex align-items-center gap-2 mb-4">
+    <span class="icon" [class.active]="!modoOscuro">🌞</span>
+    <label class="switch">
+      <input type="checkbox" [checked]="modoOscuro" (change)="toggleModo()" />
+      <span class="slider round"></span>
+    </label>
+    <span class="icon" [class.active]="modoOscuro">🌙</span>
+  </div>
+  
+  
   <h2 class="mb-4">Registrar Horas</h2>
 
   <!-- Selector de Mes -->

@@ -16,17 +16,19 @@ import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { ViewChild } from '@angular/core';
 import { FullCalendarComponent } from '@fullcalendar/angular';
+import { ViewEncapsulation } from '@angular/core';
 
 @Component({
     selector: 'app-horas-extra',
     standalone: true,
     templateUrl: './horas-extra.component.html',
     styleUrls: ['./horas-extra.component.css'],
+    encapsulation: ViewEncapsulation.None,
     imports: [FullCalendarModule, FormsModule, CommonModule, FilterFechaPipe, FilterEstadoPipe]
 })
 export class HorasExtraComponent {
     @ViewChild('fullCalendar') fullCalendarComponent!: FullCalendarComponent;
-
+    modoOscuro = false;
     horasAgrupadas: string[] = [];
     fecha: string = '';
     horaInicio: string = '';
@@ -106,6 +108,7 @@ export class HorasExtraComponent {
     constructor(private horasExtraService: HorasExtraService, private authService: AuthService) { }
 
     async ngOnInit() {
+        document.body.classList.add('light-mode');
         this.generarHorasAgrupadas();
         this.generarHorarios();
         this.cargarProyectos();
@@ -139,6 +142,19 @@ export class HorasExtraComponent {
         if (item.esMayorOIgualA8) return '#5cb85c'; // verde
         if (item.total_horas > 0) return '#f0ad4e'; // naranjo
         return '#d9534f'; // rojo
+    }
+
+    toggleModo() {
+        this.modoOscuro = !this.modoOscuro;
+
+        const body = document.body;
+        if (this.modoOscuro) {
+            body.classList.add('dark-mode');
+            body.classList.remove('light-mode');
+        } else {
+            body.classList.add('light-mode');
+            body.classList.remove('dark-mode');
+        }
     }
 
 
