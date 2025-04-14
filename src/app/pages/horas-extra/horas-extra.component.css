@@ -1,154 +1,321 @@
-/* Contenedor principal */
-.container {
-  width: fit-content;
-  margin: auto;
+/* 📋 Tabla ordenada de horas */
+.horas-table {
+  table-layout: fixed;
+  border-collapse: collapse;
 }
 
-/* Cuadrícula de Títulos */
-.grid-titles {
-  display: flex;
-  flex-direction: column;
-  border-bottom: 1px solid #ccc;
-}
-
-.grid-titles .row {
-  display: flex;
-}
-
-.title-left {
-  width: 150px; /* Ancho de la columna de proyectos */
-  font-weight: bold;
-  background-color: #eaeaea;
-  text-align: center;
-  border-right: 1px solid #ccc;
-}
-
-.title-cell {
-  width: 80px; /* Ancho de las columnas de horarios */
-  font-weight: bold;
-  background-color: #eaeaea;
-  text-align: center;
-  border-right: 1px solid #ccc;
-}
-
-/* Cuadrícula de Datos */   
-.grid-data {
-  display: flex;
-  flex-direction: column;
-}
-
-.grid-data .row {
-  display: flex;
-}
-
-.left-cell {
-  width: 150px; /* Ancho de la columna de proyectos */
-  background-color: #f9f9f9;
-  font-weight: bold;
+.proyecto-col {
+  width: 150px;
   text-align: left;
-  padding-left: 5px;
-  border-right: 1px solid #ccc;
+  font-weight: bold;
 }
 
-.selectable-cell {
-  width: 40px; /* Ancho de las columnas seleccionables */
+.hora-col {
+  width: 50px;
+  font-size: 11px;
+  padding: 5px 2px;
+}
+
+.proyecto-cell {
+  font-weight: 500;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 6px;
+}
+
+.hora-cell {
+  height: 38px;
+  padding: 0;
   background-color: white;
   cursor: pointer;
-  border-right: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
+  vertical-align: middle;
+  position: relative;
 }
 
-.selectable-cell.selected {
-  background-color: rgb(132, 255, 132);
-}
-
-.title-cell, .left-cell {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* Estilo para las celdas seleccionadas normalmente */
-.cell.selected {
-  background-color: rgb(0, 163, 0); /* Cambia esto al color que usas normalmente */
+.hora-cell.selected {
+  background-color: #4caf50;
   color: white;
 }
 
-/* Estilo para las celdas seleccionadas en las columnas 0, 1 y >= 20 */
-.cell.highlight-yellow {
-  background-color:rgb(132, 255, 132);
+.hora-cell.highlight-yellow {
+  background-color: #ffd54f;
   color: black;
 }
 
-.calendar-container {
-    margin: 5px 0; /* Reducir el margen */
-    text-align: center;
+/* ⏰ Hora mini dentro de la celda */
+.hora-mini {
+  font-size: 10px;
+  color: #666;
+  pointer-events: none;
+  display: block;
 }
 
-.calendar {
-    width: 25%; /* Reducir el ancho del calendario */
-    border-collapse: collapse;
-    margin: 0 auto;
-    font-size: 12px; /* Ajustar el tamaño del texto general */
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  .proyecto-col {
+    width: 120px;
+    font-size: 12px;
+  }
+
+  .hora-col {
+    width: 36px;
+    font-size: 10px;
+  }
+
+  .hora-mini {
+    font-size: 8px;
+  }
+
+  .hora-cell {
+    height: 32px;
+  }
 }
 
-.calendar th,
-.calendar td {
-    border: 1px solid #ddd;
-    width: 12%; /* Reducir el ancho proporcional para 7 días */
-    height: 25px; /* Reducir la altura de las celdas */
-    text-align: center;
-    vertical-align: middle;
-    padding: 2px; /* Reducir el relleno interno */
-}
 
-.calendar th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-    font-size: 12px; /* Aumentar ligeramente el tamaño del texto en los encabezados */
-}
-
-.calendar td {
-    background-color: #fff;
-}
-
-.calendar td div {
-    font-size: 14px; /* Aumentar el tamaño del texto en las celdas */
-    font-weight: bold; /* Hacer los números más destacados */
-}
-
-.calendar td.selected {
-  border: 3px solid rgb(0, 0, 0); /* Borde grueso para la celda seleccionada */
+/* 🧾 Fila lateral (nombre del proyecto) */
+.left-cell {
+  width: 130px;
   font-weight: bold;
+  background-color: #f8f9fa;
+  padding-left: 5px;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ✅ Compatibilidad */
+.cell {
+  box-sizing: border-box;
+}
+
+.cell.selected {
+  background-color: #4caf50 !important;
+  color: white;
+}
+
+.cell.highlight-yellow {
+  background-color: #ffd54f !important;
   color: black;
 }
 
-.calendar td.highlight-rojo {
-    background-color: rgb(255, 0, 0); /* Color naranja */
-    font-weight: bold;
-    color: black;
+/* 🧭 Calendario */
+.calendar-container {
+  margin: 30px 0;
 }
 
-.calendar td.highlight-green {
-    background-color: rgb(132, 255, 132); /* Color verde */
-    font-weight: bold;
-    color: black;
+::ng-deep .fc {
+  font-size: 14px;
 }
 
-.calendar td.highlight-naranjo {
-    background-color: rgb(255, 136, 0); /* Color morado */
-    font-weight: bold;
-    color: white;
+::ng-deep .fc-toolbar-title {
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
-.calendar td.highlight-celeste {
-    background-color: rgb(0, 191, 255); /* Color celeste */
-    font-weight: bold;
-    color: black;
+::ng-deep .fc-daygrid-day-frame {
+  min-height: 70px;
 }
 
-.calendar td.highlight-white {
-    background-color: white; /* Color blanco */
-    font-weight: normal;
-    color: black;
+::ng-deep .fc-event {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 4px;
+  text-align: center;
+  white-space: normal;
 }
+
+::ng-deep .fc-event-title {
+  font-weight: 500;
+}
+
+/* 🎨 Colores eventos */
+::ng-deep .fc-event.bg-verde {
+  background-color: #5cb85c !important;
+  color: white;
+}
+
+::ng-deep .fc-event.bg-celeste {
+  background-color: #5bc0de !important;
+  color: white;
+}
+
+::ng-deep .fc-event.bg-naranjo {
+  background-color: #f0ad4e !important;
+  color: white;
+}
+
+::ng-deep .fc-event.bg-rojo {
+  background-color: #d9534f !important;
+  color: white;
+}
+
+/* 📋 Tabla final */
+.table th,
+.table td {
+  vertical-align: middle !important;
+  text-align: center;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 5px 10px;
+}
+
+/* 📱 Responsive */
+@media (max-width: 768px) {
+  .selectable-cell {
+    width: 32px;
+    height: 28px;
+  }
+
+  .title-left,
+  .left-cell {
+    font-size: 11px;
+  }
+
+  .title-cell {
+    font-size: 10px;
+  }
+
+  ::ng-deep .fc-daygrid-day-frame {
+    min-height: 50px;
+  }
+
+  .calendar-container {
+    font-size: 12px;
+  }
+}
+
+.half-col {
+  font-size: 10px;
+  background-color: #f9f9f9;
+  padding: 2px 0;
+}
+
+/* 📦 Márgenes generales */
+.container {
+  margin: 20px;
+}
+
+h2, h3, h4, h5 {
+  text-align: center;
+}
+
+h2, h3, h4 {
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+
+/* Dark Mode */
+body.dark-mode {
+  background-color: #121212;
+  color: #f0f0f0;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode label,
+body.dark-mode p,
+body.dark-mode span {
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .table,
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  border-color: #444;
+}
+
+body.dark-mode .btn-light {
+  background-color: #333;
+  color: white;
+}
+
+body.dark-mode .table-light {
+  background-color: #2c2c2c !important;
+  color: #f0f0f0;
+}
+
+body.dark-mode .table-dark {
+  background-color: #1a1a1a;
+  color: white;
+}
+
+/* FullCalendar title */
+body.dark-mode ::ng-deep .fc-toolbar-title {
+  color: #f0f0f0;
+}
+
+/* Colores del calendario */
+body.dark-mode ::ng-deep .fc-daygrid-day-frame {
+  background-color: #1e1e1e;
+}
+
+/* Switch  */
+.modo-switch {
+  justify-content: right;
+  margin: 50px;
+}
+
+.icon {
+  font-size: 1.4rem;
+  opacity: 0.5;
+  transition: 0.3s ease;
+}
+.icon.active {
+  opacity: 1;
+}
+
+/* Estilos del switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #4caf50;
+}
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
