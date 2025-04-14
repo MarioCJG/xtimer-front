@@ -199,9 +199,16 @@
 }
 
 /* 📦 Márgenes generales */
-.container {
-  margin: 20px;
+.container-fluid {
+  padding-left: 30px;
+  padding-right: 30px;
+  max-width: 95%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
+
+
+
 
 h2, h3, h4, h5 {
   text-align: center;
