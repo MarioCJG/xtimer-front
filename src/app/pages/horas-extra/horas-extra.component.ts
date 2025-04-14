@@ -11,14 +11,23 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+import { FullCalendarModule } from '@fullcalendar/angular';
+import { CalendarOptions } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import { ViewChild } from '@angular/core';
+import { FullCalendarComponent } from '@fullcalendar/angular';
+
 @Component({
     selector: 'app-horas-extra',
     standalone: true,
     templateUrl: './horas-extra.component.html',
     styleUrls: ['./horas-extra.component.css'],
-    imports: [FormsModule, CommonModule, FilterFechaPipe, FilterEstadoPipe]
+    imports: [FullCalendarModule, FormsModule, CommonModule, FilterFechaPipe, FilterEstadoPipe]
 })
 export class HorasExtraComponent {
+    @ViewChild('fullCalendar') fullCalendarComponent!: FullCalendarComponent;
+
+    horasAgrupadas: string[] = [];
     fecha: string = '';
     horaInicio: string = '';
     horaFin: string = '';
@@ -59,6 +68,19 @@ export class HorasExtraComponent {
 
     resumenHoras: any[] = [];
 
+    calendarOptions: CalendarOptions = {
+        plugins: [dayGridPlugin],
+        initialView: 'dayGridMonth',
+        events: [],
+        locale: 'es',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: ''
+        }
+    };
+
+
     proyectoSeleccionadoInfo: {
         id_proyecto: number | null;
         nombre_proyecto: string | null;
@@ -84,6 +106,7 @@ export class HorasExtraComponent {
     constructor(private horasExtraService: HorasExtraService, private authService: AuthService) { }
 
     async ngOnInit() {
+        this.generarHorasAgrupadas();
         this.generarHorarios();
         this.cargarProyectos();
         this.cargarHorasExtra();
@@ -101,6 +124,24 @@ export class HorasExtraComponent {
 
         this.seleccionarMesActual();
     }
+
+    onCalendarDateClick(arg: any): void {
+        const clickedDate = new Date(arg.dateStr);
+        const dia = clickedDate.getDate();
+        const nombre = this.diasSemanaAbreviados[clickedDate.getDay()];
+
+        this.seleccionarDia({ dia, nombre });
+        console.log('Día clickeado desde FullCalendar:', clickedDate);
+    }
+
+    getResumenColor(item: any): string {
+        if (item.extrasMayorA0) return '#5bc0de'; // celeste
+        if (item.esMayorOIgualA8) return '#5cb85c'; // verde
+        if (item.total_horas > 0) return '#f0ad4e'; // naranjo
+        return '#d9534f'; // rojo
+    }
+
+
 
     seleccionarProyecto(proyecto: any) {
         // Asignar los valores a la variable proyectoSeleccionadoInfo
@@ -309,6 +350,14 @@ export class HorasExtraComponent {
                             };
                         });
 
+                        this.calendarOptions.events = this.resumenHoras.map((item) => ({
+                            title: `${item.total_horas} hrs`,
+                            date: item.fecha,
+                            backgroundColor: this.getResumenColor(item),
+                            borderColor: this.getResumenColor(item)
+                        }));
+
+
                         console.log('Resumen procesado:', this.resumenHoras);
                         resolve(); // Resolver la promesa al finalizar
 
@@ -345,40 +394,47 @@ export class HorasExtraComponent {
         this.diasSeleccionados = [];
         this.fechaSeleccionada = '';
 
-        this.semanas = this.calcularSemanas(fechaActual.getFullYear(), fechaActual.getMonth());
-
         // Seleccionar el día actual
         const diaActual = fechaActual.getDate();
-        const nombreDia = this.diasSemanaAbreviados[fechaActual.getDay()]; // Obtener el nombre del día
+        const nombreDia = this.diasSemanaAbreviados[fechaActual.getDay()];
         this.seleccionarDia({ dia: diaActual, nombre: nombreDia });
+
+        // 🔄 Actualizar vista del calendario
+        this.fullCalendarComponent?.getApi().gotoDate(new Date(anio, mes, 1));
     }
 
+
+
     seleccionarMesAnterior() {
-        this.mesSeleccionado = this.mesAnterior; // Marcar el mes anterior como seleccionado
+        this.mesSeleccionado = this.mesAnterior;
         console.log('Mes anterior seleccionado:', this.mesAnterior);
 
         const fechaActual = new Date();
         const anio = fechaActual.getFullYear();
         const mesAnteriorIndex = fechaActual.getMonth() - 1;
 
-        const mes = mesAnteriorIndex >= 0 ? mesAnteriorIndex : 11; // Si es enero, el mes anterior es diciembre
-        const anioAnterior = mesAnteriorIndex >= 0 ? anio : anio - 1; // Ajustar el año si es diciembre
+        const mes = mesAnteriorIndex >= 0 ? mesAnteriorIndex : 11;
+        const anioAnterior = mesAnteriorIndex >= 0 ? anio : anio - 1;
 
-        // Calcular las semanas del mes anterior
         this.semanas = this.calcularSemanas(anioAnterior, mes);
         console.log('Semanas del mes anterior:', this.semanas);
 
-        // Reiniciar la selección de semana y día
         this.semanaSeleccionada = null;
         this.diaSeleccionado = null;
         this.diasSeleccionados = [];
         this.fechaSeleccionada = '';
 
-        // Seleccionar el último día del mes anterior
-        const ultimoDia = new Date(anioAnterior, mes + 1, 0).getDate(); // Obtener el último día del mes
-        const nombreUltimoDia = this.diasSemanaAbreviados[new Date(anioAnterior, mes, ultimoDia).getDay()]; // Obtener el nombre del último día
+        const ultimoDia = new Date(anioAnterior, mes + 1, 0).getDate();
+        const nombreUltimoDia = this.diasSemanaAbreviados[
+            new Date(anioAnterior, mes, ultimoDia).getDay()
+        ];
         this.seleccionarDia({ dia: ultimoDia, nombre: nombreUltimoDia });
+
+        // 🔄 Actualizar vista del calendario
+        this.fullCalendarComponent?.getApi().gotoDate(new Date(anioAnterior, mes, 1));
     }
+
+
 
     mostrarDiasSemana(indiceSemana: number) {
         this.semanaSeleccionada = indiceSemana; // Marcar la semana seleccionada
@@ -834,6 +890,15 @@ export class HorasExtraComponent {
     convertirFechaAFormatoISO(fecha: string): string {
         const [dia, mes, anio] = fecha.split('-');
         return `${anio}-${mes}-${dia}`;
+    }
+
+    generarHorasAgrupadas() {
+        const baseHora = new Date('2024-01-01T08:00:00');
+        for (let i = 0; i < 16; i++) {
+            const hora = baseHora.getHours().toString().padStart(2, '0') + ':00';
+            this.horasAgrupadas.push(hora);
+            baseHora.setHours(baseHora.getHours() + 1);
+        }
     }
 
     // Función para calcular el horario basado en el índice de la columna
