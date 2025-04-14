@@ -74,9 +74,16 @@ export class AdminComponent {
 
   seccionActiva: string = ''; // Variable para rastrear la sección activa
 
-  mostrarSeccion(seccion: string) {
-    this.seccionActiva = seccion; // Cambiar la sección activa
-  }
+mostrarSeccion(seccion: string) {
+  this.seccionActiva = seccion; // Cambiar la sección activa
+
+  // Limpiar los valores de "valor_hora" de todos los consultores
+  this.consultores.forEach(consultor => {
+    consultor.valor_hora = null; // Reinicia el valor por hora
+  });
+
+  console.log('Sección cambiada a:', seccion);
+}
 
   onCargoChange(event: any) {
     console.log('Cargo seleccionado:', this.idCargoSeleccionado);
@@ -160,26 +167,22 @@ export class AdminComponent {
   }
 
   cargarConsultoresAsignados() {
-
-    console.log("Consultores asignados a proyecto:", this.consultoresAsignados);
-    console.log(this.consultores);
     if (!this.idProyectoSeleccionado) return;
-
+  
     this.http
       .get<any[]>(`http://localhost:3000/api/proyectos-asignados/${this.idProyectoSeleccionado}`)
       .subscribe(
         res => {
-          // Actualizar la lista de consultores asignados
+          // Actualizar la lista de consultores asignados con sus valores por hora
           this.consultoresAsignados = res.map(asignacion => asignacion.id_usuario);
-
-          // Sincronizar la lista de asignaciones
-          this.asignaciones = this.consultoresAsignados.map(idConsultor => ({
-            id_usuario: idConsultor,
-            id_proyecto: this.idProyectoSeleccionado
-          }));
-
+  
+          // Sincronizar los valores por hora con la lista de consultores
+          this.consultores.forEach(consultor => {
+            const asignado = res.find(c => c.id_usuario === consultor.id_consultor);
+            consultor.valor_hora = asignado ? asignado.valor_hora : null;
+          });
+  
           console.log('Consultores asignados cargados:', this.consultoresAsignados);
-          console.log('Asignaciones sincronizadas:', this.asignaciones);
         },
         err => {
           console.error('Error al cargar consultores asignados:', err);
@@ -206,32 +209,36 @@ toggleConsultorAsignado(consultor: any, event: any) {
   console.log('Consultores asignados:', this.consultoresAsignados);
 }
 
-  guardarAsignaciones(asignaciones: any) {
-    console.log('Asignaciones a guardar:', this.asignaciones);
+guardarAsignaciones(asignaciones: any) {
+  // Construir las asignaciones con el valor por hora
+  const asignacionesConValorHora = this.consultores
+    .filter(consultor => this.consultoresAsignados.includes(consultor.id_consultor))
+    .map(consultor => ({
+      id_usuario: consultor.id_consultor,
+      id_proyecto: this.idProyectoSeleccionado,
+      valor_hora: consultor.valor_hora || 0 // Asegúrate de enviar un valor por defecto si no se ingresó
+    }));
 
-    // Imprimir cada asignación con el valor por hora
-    this.asignaciones.forEach(asignacion => {
-      const consultor = this.consultores.find(c => c.id_consultor === asignacion.id_usuario);
-      console.log(`Consultor ID: ${asignacion.id_usuario}, Proyecto ID: ${asignacion.id_proyecto}, Valor por hora: ${consultor?.valor_hora || 0}`);
-    });
+  console.log('Asignaciones a guardar:', asignacionesConValorHora);
 
-    // Verificar si la lista de asignaciones está vacía
-    if (!this.asignaciones || this.asignaciones.length === 0) {
-      console.warn('Advertencia: El proyecto quedará sin ninguna asignación.');
-    }
-
-    // Enviar la lista de asignaciones al backend
-    this.http.post('http://localhost:3000/api/proyectos-asignados/actualizar', this.asignaciones).subscribe(
-      res => {
-        console.log('Asignaciones actualizadas con éxito:', res);
-        this.mensajeAsignacion = 'Asignaciones guardadas correctamente.';
-      },
-      err => {
-        console.error('Error al guardar asignaciones:', err);
-        this.mensajeAsignacion = 'Error al guardar las asignaciones.';
-      }
-    );
+  // Verificar si la lista de asignaciones está vacía
+  if (!asignacionesConValorHora || asignacionesConValorHora.length === 0) {
+    console.warn('Advertencia: El proyecto quedará sin ninguna asignación.');
+    return;
   }
+
+  // Enviar la lista de asignaciones al backend
+  this.http.post('http://localhost:3000/api/proyectos-asignados/actualizar', asignacionesConValorHora).subscribe(
+    res => {
+      console.log('Asignaciones actualizadas con éxito:', res);
+      this.mensajeAsignacion = 'Asignaciones guardadas correctamente.';
+    },
+    err => {
+      console.error('Error al guardar asignaciones:', err);
+      this.mensajeAsignacion = 'Error al guardar las asignaciones.';
+    }
+  );
+}
 
   crearCliente() {
     if (!this.nombreCliente.trim() || !this.contactoCliente.trim() || !this.emailCliente.trim() || !this.telefonoCliente.trim()) {

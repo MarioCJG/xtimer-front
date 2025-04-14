@@ -72,6 +72,14 @@ export class HorasExtraService {
         });
     }
 
+    obtenerResumenHoras() {
+        return this.http.get<any[]>('http://localhost:3000/api/resumen');
+    }
+
+    actualizarAprobacion(id_resumen: number, aprobacion: string): Observable<any> {
+        const datos = { id_resumen, aprobacion };
+        return this.http.put(`${this.apiUrl}/resumen/actualizar-aprobacion`, datos);
+    }
 
     /**
      * Actualiza el estado de una hora extra.
