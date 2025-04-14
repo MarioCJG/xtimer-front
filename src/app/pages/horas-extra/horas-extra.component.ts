@@ -760,19 +760,13 @@ export class HorasExtraComponent {
         console.log('El botón Guardar fue presionado.');
         await this.eliminarHorasPorFecha(); // Llamar a la función para eliminar horas por fecha
 
-        // Verificar que id_usuario no sea null
         if (this.id_usuario === null) {
             console.error('Error: El ID del usuario no está definido.');
             return;
         }
 
-        // Calcular las horas totales y extras
         const { total, extras, totalDecimal, extrasDecimal } = this.calcularTotalHorasDelDia();
 
-        // Imprimir la información del ticket en la consola
-        console.log(`Ticket: ID Usuario: ${this.id_usuario}, Fecha: ${this.fechaSeleccionada}, Horas Totales: ${totalDecimal}, Horas Extras: ${extrasDecimal}`);
-
-        // Preparar los datos para enviar
         const resumenDatos = {
             id_usuario: this.id_usuario,
             fecha: this.convertirFechaAFormatoISO(this.fechaSeleccionada),
@@ -780,41 +774,55 @@ export class HorasExtraComponent {
             horas_extras: extrasDecimal
         };
 
+        let idResumenHoras: number | null = null;
+
         // Verificar si ya existe un registro con el mismo id_usuario y fecha
-        this.horasExtraService.buscarResumenHoras(this.id_usuario, resumenDatos.fecha).subscribe(
-            res => {
-                console.log('Registro encontrado, actualizando...', res);
+        await new Promise<void>((resolve, reject) => {
+            this.horasExtraService.buscarResumenHoras(this.id_usuario!, resumenDatos.fecha).subscribe(
+                res => {
+                    console.log('Registro encontrado, actualizando...', res);
 
-                // Si el registro existe, hacer un PUT para actualizarlo
-                this.horasExtraService.actualizarResumenHoras(resumenDatos).subscribe(
-                    res => {
-                        console.log('Resumen de horas actualizado con éxito:', res);
-                        this.inicializarDatos();
-                    },
-                    err => {
-                        console.error('Error al actualizar el resumen de horas:', err);
-                    }
-                );
-            },
-            err => {
-                if (err.status === 404) {
-                    console.log('No se encontró un registro, creando uno nuevo...');
-
-                    // Si no existe el registro, hacer un POST para crearlo
-                    this.horasExtraService.guardarResumenHoras(resumenDatos).subscribe(
+                    this.horasExtraService.actualizarResumenHoras(resumenDatos).subscribe(
                         res => {
-                            console.log('Resumen de horas guardado con éxito:', res);
-                            this.inicializarDatos();
+                            console.log('Resumen de horas actualizado con éxito:', res);
+                            idResumenHoras = (res as { id_resumen: number }).id_resumen; // Asignar el ID del resumen actualizado
+                            resolve();
                         },
                         err => {
-                            console.error('Error al guardar el resumen de horas:', err);
+                            console.error('Error al actualizar el resumen de horas:', err);
+                            reject(err);
                         }
                     );
-                } else {
-                    console.error('Error al buscar el resumen de horas:', err);
+                },
+                err => {
+                    if (err.status === 404) {
+                        console.log('No se encontró un registro, creando uno nuevo...');
+
+                        this.horasExtraService.guardarResumenHoras(resumenDatos).subscribe(
+                            res => {
+                                console.log('Resumen de horas guardado con éxito:', res);
+                                idResumenHoras = (res as { id_resumen: number }).id_resumen; // Asignar el ID del resumen creado
+                                resolve();
+                            },
+                            err => {
+                                console.error('Error al guardar el resumen de horas:', err);
+                                reject(err);
+                            }
+                        );
+                    } else {
+                        console.error('Error al buscar el resumen de horas:', err);
+                        reject(err);
+                    }
                 }
-            }
-        );
+            );
+        });
+
+        if (!idResumenHoras) {
+            console.error('Error: No se pudo obtener el ID del resumen de horas.');
+            return;
+        }
+
+        console.log('ID del resumen de horas obtenido:', idResumenHoras);
 
         // Resto de la lógica para guardar las horas extra...
         const agrupadoPorFila: { [key: number]: number[] } = {};
@@ -855,11 +863,13 @@ export class HorasExtraComponent {
                         const datos = {
                             id_usuario: idUsuario,
                             id_asignacion: idAsignacion,
+                            id_resumen_horas: idResumenHoras, // Asociar el ID del resumen de horas
                             fecha: fecha, // Fecha en formato yyyy-mm-dd
                             hora_inicio: horaInicio,
                             hora_fin: horaFin,
                             total_horas: totalHoras,
                         };
+                        console.log('Datos enviados al backend:', datos);
 
                         this.horasExtraService.registrarHorasExtra(datos).subscribe(
                             res => {
@@ -884,6 +894,7 @@ export class HorasExtraComponent {
                 const datos = {
                     id_usuario: idUsuario,
                     id_asignacion: idAsignacion.toString(),
+                    id_resumen_horas: idResumenHoras, // Asociar el ID del resumen de horas
                     fecha: fecha, // Fecha en formato yyyy-mm-dd
                     hora_inicio: horaInicio,
                     hora_fin: horaFin,
