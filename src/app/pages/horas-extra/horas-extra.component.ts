@@ -394,7 +394,7 @@ export class HorasExtraComponent {
     }
 
     seleccionarMesActual() {
-        this.mesSeleccionado = this.mesActual; // Marcar el mes actual como seleccionado
+        this.mesSeleccionado = this.mesActual;
         console.log('Mes actual seleccionado:', this.mesActual);
 
         const fechaActual = new Date();
@@ -402,22 +402,25 @@ export class HorasExtraComponent {
         const mes = fechaActual.getMonth();
 
         this.semanas = this.calcularSemanas(anio, mes);
-        console.log('Semanas del mes actual:', this.semanas);
 
-        // Reiniciar la selección de semana y día
+        // 🔄 Actualizar vista del calendario
+        this.fullCalendarComponent?.getApi().gotoDate(new Date(anio, mes, 1));
+
         this.semanaSeleccionada = null;
         this.diaSeleccionado = null;
         this.diasSeleccionados = [];
         this.fechaSeleccionada = '';
 
-        // Seleccionar el día actual
+        // Generar las semanas y luego seleccionar la semana y día actual
         const diaActual = fechaActual.getDate();
-        const nombreDia = this.diasSemanaAbreviados[fechaActual.getDay()];
-        this.seleccionarDia({ dia: diaActual, nombre: nombreDia });
-
-        // 🔄 Actualizar vista del calendario
-        this.fullCalendarComponent?.getApi().gotoDate(new Date(anio, mes, 1));
+        const semanaIndex = this.semanas.findIndex(sem => sem.includes(diaActual));
+        if (semanaIndex !== -1) {
+            this.mostrarDiasSemana(semanaIndex);
+            const nombreDia = this.diasSemanaAbreviados[fechaActual.getDay()];
+            this.seleccionarDia({ dia: diaActual, nombre: nombreDia });
+        }
     }
+
 
 
 
@@ -493,6 +496,29 @@ export class HorasExtraComponent {
         this.fechaSeleccionada = `${diaFormateado}-${mesFormateado}-${anioFormateado}`;
         console.log(`Fecha seleccionada: ${this.fechaSeleccionada}`);
 
+        this.fullCalendarComponent?.getApi().gotoDate(fechaCompleta);
+
+        // 💡 Agregar o reemplazar el evento de selección actual
+        const calendario = this.fullCalendarComponent?.getApi();
+
+        // Primero eliminar cualquier evento previo marcado como "seleccionado"
+        calendario.getEvents().forEach(event => {
+            if (event.id === 'seleccionado') {
+                event.remove();
+            }
+        });
+
+        // Agregar un evento visual en el día seleccionado
+        calendario.addEvent({
+            id: 'seleccionado',
+            title: '📌 Día seleccionado',
+            start: fechaCompleta,
+            allDay: true,
+            backgroundColor: '#ffcc00',  // Color distintivo
+            borderColor: '#ffa500',
+            display: 'background'
+        });
+
         // Filtrar las horas correspondientes a la fecha seleccionada
         const horasFiltradas = this.horasExtra.filter(hora => {
             const fechaHora = new Date(hora.fecha).toISOString().split('T')[0]; // Convertir la fecha de la hora extra a yyyy-mm-dd
@@ -506,6 +532,8 @@ export class HorasExtraComponent {
 
         // Transformar las horas filtradas al formato del grid
         this.transformarHorasAlGrid(horasFiltradas);
+
+
 
     }
 
