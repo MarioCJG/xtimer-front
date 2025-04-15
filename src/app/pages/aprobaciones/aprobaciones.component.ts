@@ -20,6 +20,7 @@ export class AprobacionesComponent implements OnInit {
     resumenHoras: any[] = []; // Inicializar la variable para almacenar el resumen de horas
 
     detallesHorasExtra: any[] = []; // Variable para almacenar los detalles de horas extra
+    comentarios: any[] = []; // Variable para almacenar los detalles de horas extra
 
 
     constructor(private horasExtraService: HorasExtraService, public darkModeService: DarkModeService) { }
@@ -33,8 +34,15 @@ export class AprobacionesComponent implements OnInit {
         this.cargarResumenHoras(); // Cargar el resumen de horas al iniciar el componente
     }
 
-    imprimirId(id_resumen: number) {
+    imprimirId(id_resumen: number, fecha: string) {
         console.log('ID Resumen seleccionado:', id_resumen);
+        console.log('Fecha seleccionada (original):', fecha);
+
+        // Formatear la fecha al formato YYYY-MM-DD
+        const fechaFormateada = new Date(fecha).toISOString().split('T')[0];
+        console.log('Fecha formateada:', fechaFormateada);
+
+        // Obtener los detalles de horas extra
         this.horasExtraService.obtenerHorasPorResumen(id_resumen).subscribe(
             res => {
                 console.log('Detalles de horas extra:', res);
@@ -45,6 +53,25 @@ export class AprobacionesComponent implements OnInit {
                     hora_fin: detalle.hora_fin
                 }));
                 console.log('Detalles de horas extra guardados:', this.detallesHorasExtra);
+
+                // Llamar a obtenerComentariosPorResumen con id_resumen y fecha formateada
+                if (fechaFormateada) {
+                    this.horasExtraService.obtenerComentariosPorResumen(id_resumen, fechaFormateada).subscribe(
+                        res => {
+                            this.comentarios = res.map((comentario: any) => ({
+                                proyecto_nombre : comentario.proyecto_nombre,
+                                comentario: comentario.comentario,
+                            }));
+                            console.log('Comentarios obtenidos:', this.comentarios);
+                            // Aquí puedes manejar los comentarios como desees
+                        },
+                        err => {
+                            console.error('❌ Error al obtener comentarios:', err);
+                        }
+                    );
+                } else {
+                    console.warn('⚠ No se encontró una fecha válida en los detalles.');
+                }
             },
             err => {
                 console.error('❌ Error al obtener detalles de horas extra:', err);

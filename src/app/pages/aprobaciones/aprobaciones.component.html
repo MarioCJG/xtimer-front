@@ -50,7 +50,7 @@
         </thead>
         <tbody>
             <tr *ngFor="let hora of resumenHoras">
-                <td (click)="imprimirId(hora.id_resumen)" style="cursor: pointer;">
+                <td (click)="imprimirId(hora.id_resumen, hora.fecha)" style="cursor: pointer;">
                     {{ hora.id_resumen }}
                 </td>
                 <td>{{ hora.usuario_email }}</td>
@@ -70,8 +70,8 @@
         <!-- Tabla para mostrar los detalles de horas extra -->
         <div *ngIf="detallesHorasExtra.length > 0" class="mt-4">
             <h3>Detalles de Horas Extra </h3>
-            <table class="table table-striped">
-                <thead>
+            <table class="table table-bordered  table-dark">
+                <thead class="table-dark">
                     <tr>
                         <th>Proyecto Completo</th>
                         <th>Hora Inicio</th>
@@ -83,6 +83,24 @@
                         <td>{{ detalle.proyecto_completo }}</td>
                         <td>{{ detalle.hora_inicio }}</td>
                         <td>{{ detalle.hora_fin }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Tabla para mostrar los detalles de horas extra -->
+        <div *ngIf="comentarios.length > 0" class="mt-4">
+            <h3>Comentarios </h3>
+            <table class="table table-bordered  table-dark">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Comentario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let comentario of comentarios">
+                        <td>{{ comentario.proyecto_nombre }}</td>
+                        <td>{{ comentario.comentario }}</td>
                     </tr>
                 </tbody>
             </table>
