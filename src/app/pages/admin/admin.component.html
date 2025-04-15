@@ -1,207 +1,394 @@
-<div class="container">
-  <h1>Panel de Administración</h1>
-
-  <!-- Barra de navegación -->
-  <div class="btn-toolbar mb-3" role="toolbar">
-    <div class="btn-group me-2" role="group">
-      <button class="btn"
-        [ngClass]="{'btn-secondary': seccionActiva !== 'crearCliente', 'btn-primary': seccionActiva === 'crearCliente'}"
-        (click)="mostrarSeccion('crearCliente')">
-        Crear un nuevo cliente
-      </button>
-      <button class="btn"
-        [ngClass]="{'btn-secondary': seccionActiva !== 'crearArea', 'btn-primary': seccionActiva === 'crearArea'}"
-        (click)="mostrarSeccion('crearArea')">
-        Crear una nueva área
-      </button>
-      <button class="btn"
-        [ngClass]="{'btn-secondary': seccionActiva !== 'crearCargo', 'btn-primary': seccionActiva === 'crearCargo'}"
-        (click)="mostrarSeccion('crearCargo')">
-        Crear un nuevo cargo
-      </button>
-      <button class="btn"
-        [ngClass]="{'btn-secondary': seccionActiva !== 'crearProyecto', 'btn-primary': seccionActiva === 'crearProyecto'}"
-        (click)="mostrarSeccion('crearProyecto')">
-        Crear un nuevo proyecto
-      </button>
-      <button class="btn"
-        [ngClass]="{'btn-secondary': seccionActiva !== 'asignarConsultores', 'btn-primary': seccionActiva === 'asignarConsultores'}"
-        (click)="mostrarSeccion('asignarConsultores')">
-        Asignar consultores
-      </button>
-      <button class="btn"
-        [ngClass]="{'btn-secondary': seccionActiva !== 'crearUsuarioConsultor', 'btn-primary': seccionActiva === 'crearUsuarioConsultor'}"
-        (click)="mostrarSeccion('crearUsuarioConsultor')">
-        Crear usuario y consultor
-      </button>
+<div class="container-fluid">
+  <div class="contenido-admin">
+    <div
+      class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end"
+    >
+      <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
+      <label class="switch">
+        <input
+          type="checkbox"
+          [checked]="darkModeService.modoOscuro"
+          (change)="darkModeService.toggleModo()"
+        />
+        <span class="slider round"></span>
+      </label>
+      <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
     </div>
-  </div>
 
-  <hr />
+    <h1 class="titulo-centrado">Panel de Administración</h1>
+    
+    <!-- Barra de navegación -->
+    <div class="btn-toolbar mb-3" role="toolbar">
+      <div class="btn-group me-2" role="group">
+        <button
+          class="btn"
+          [ngClass]="{
+            'btn-secondary': seccionActiva !== 'crearCliente',
+            'btn-primary': seccionActiva === 'crearCliente'
+          }"
+          (click)="mostrarSeccion('crearCliente')"
+        >
+          Crear un nuevo cliente
+        </button>
+        <button
+          class="btn"
+          [ngClass]="{
+            'btn-secondary': seccionActiva !== 'crearArea',
+            'btn-primary': seccionActiva === 'crearArea'
+          }"
+          (click)="mostrarSeccion('crearArea')"
+        >
+          Crear una nueva área
+        </button>
+        <button
+          class="btn"
+          [ngClass]="{
+            'btn-secondary': seccionActiva !== 'crearCargo',
+            'btn-primary': seccionActiva === 'crearCargo'
+          }"
+          (click)="mostrarSeccion('crearCargo')"
+        >
+          Crear un nuevo cargo
+        </button>
+        <button
+          class="btn"
+          [ngClass]="{
+            'btn-secondary': seccionActiva !== 'crearProyecto',
+            'btn-primary': seccionActiva === 'crearProyecto'
+          }"
+          (click)="mostrarSeccion('crearProyecto')"
+        >
+          Crear un nuevo proyecto
+        </button>
+        <button
+          class="btn"
+          [ngClass]="{
+            'btn-secondary': seccionActiva !== 'asignarConsultores',
+            'btn-primary': seccionActiva === 'asignarConsultores'
+          }"
+          (click)="mostrarSeccion('asignarConsultores')"
+        >
+          Asignar consultores
+        </button>
+        <button
+          class="btn"
+          [ngClass]="{
+            'btn-secondary': seccionActiva !== 'crearUsuarioConsultor',
+            'btn-primary': seccionActiva === 'crearUsuarioConsultor'
+          }"
+          (click)="mostrarSeccion('crearUsuarioConsultor')"
+        >
+          Crear usuario y consultor
+        </button>
+      </div>
+    </div>
 
-  <!-- Sección: Crear un nuevo cliente -->
-  <div id="crearCliente" *ngIf="seccionActiva === 'crearCliente'">
-    <p>Crear un nuevo cliente:</p>
-    <form (ngSubmit)="crearCliente()">
-      <div class="mb-3">
-        <label for="nombreCliente" class="form-label">Nombre del Cliente</label>
-        <input type="text" id="nombreCliente" class="form-control" [(ngModel)]="nombreCliente" name="nombreCliente"
-          required />
-      </div>
-      <div class="mb-3">
-        <label for="contactoCliente" class="form-label">Contacto</label>
-        <input type="text" id="contactoCliente" class="form-control" [(ngModel)]="contactoCliente"
-          name="contactoCliente" required />
-      </div>
-      <div class="mb-3">
-        <label for="emailCliente" class="form-label">Email</label>
-        <input type="email" id="emailCliente" class="form-control" [(ngModel)]="emailCliente" name="emailCliente"
-          required />
-      </div>
-      <div class="mb-3">
-        <label for="telefonoCliente" class="form-label">Teléfono</label>
-        <input type="text" id="telefonoCliente" class="form-control" [(ngModel)]="telefonoCliente"
-          name="telefonoCliente" required />
-      </div>
-      <button type="submit" class="btn btn-primary">Guardar Cliente</button>
-    </form>
-  </div>
+    <hr />
 
-  <!-- Sección: Crear una nueva área -->
-  <div id="crearArea" *ngIf="seccionActiva === 'crearArea'">
-    <p>Crear una nueva área:</p>
-    <form (ngSubmit)="crearArea()">
-      <div class="mb-3">
-        <label for="nombreArea" class="form-label">Nombre del Área</label>
-        <input type="text" id="nombreArea" class="form-control" [(ngModel)]="nombreArea" name="nombreArea" required />
-      </div>
-      <button type="submit" class="btn btn-primary">Guardar Área</button>
-    </form>
-  </div>
+    <!-- Sección: Crear un nuevo cliente -->
+    <div id="crearCliente" *ngIf="seccionActiva === 'crearCliente'">
+      <p>Crear un nuevo cliente:</p>
+      <form (ngSubmit)="crearCliente()">
+        <div class="mb-3">
+          <label for="nombreCliente" class="form-label"
+            >Nombre del Cliente</label
+          >
+          <input
+            type="text"
+            id="nombreCliente"
+            class="form-control"
+            [(ngModel)]="nombreCliente"
+            name="nombreCliente"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="contactoCliente" class="form-label">Contacto</label>
+          <input
+            type="text"
+            id="contactoCliente"
+            class="form-control"
+            [(ngModel)]="contactoCliente"
+            name="contactoCliente"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="emailCliente" class="form-label">Email</label>
+          <input
+            type="email"
+            id="emailCliente"
+            class="form-control"
+            [(ngModel)]="emailCliente"
+            name="emailCliente"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="telefonoCliente" class="form-label">Teléfono</label>
+          <input
+            type="text"
+            id="telefonoCliente"
+            class="form-control"
+            [(ngModel)]="telefonoCliente"
+            name="telefonoCliente"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+      </form>
+    </div>
 
-  <!-- Sección: Crear un nuevo cargo -->
-  <div id="crearCargo" *ngIf="seccionActiva === 'crearCargo'">
-    <p>Crear un nuevo cargo:</p>
-    <form (ngSubmit)="crearCargo()">
-      <div class="mb-3">
-        <label for="nombreCargo" class="form-label">Nombre del Cargo</label>
-        <input type="text" id="nombreCargo" class="form-control" [(ngModel)]="nombreCargo" name="nombreCargo"
-          required />
-      </div>
-      <button type="submit" class="btn btn-primary">Guardar Cargo</button>
-    </form>
-  </div>
+    <!-- Sección: Crear una nueva área -->
+    <div id="crearArea" *ngIf="seccionActiva === 'crearArea'">
+      <p>Crear una nueva área:</p>
+      <form (ngSubmit)="crearArea()">
+        <div class="mb-3">
+          <label for="nombreArea" class="form-label">Nombre del Área</label>
+          <input
+            type="text"
+            id="nombreArea"
+            class="form-control"
+            [(ngModel)]="nombreArea"
+            name="nombreArea"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Área</button>
+      </form>
+    </div>
 
-  <!-- Sección: Crear un nuevo proyecto -->
-  <div id="crearProyecto" *ngIf="seccionActiva === 'crearProyecto'">
-    <p>Crear un nuevo proyecto:</p>
-    <form (ngSubmit)="crearProyecto()">
+    <!-- Sección: Crear un nuevo cargo -->
+    <div id="crearCargo" *ngIf="seccionActiva === 'crearCargo'">
+      <p>Crear un nuevo cargo:</p>
+      <form (ngSubmit)="crearCargo()">
+        <div class="mb-3">
+          <label for="nombreCargo" class="form-label">Nombre del Cargo</label>
+          <input
+            type="text"
+            id="nombreCargo"
+            class="form-control"
+            [(ngModel)]="nombreCargo"
+            name="nombreCargo"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Cargo</button>
+      </form>
+    </div>
+
+    <!-- Sección: Crear un nuevo proyecto -->
+    <div id="crearProyecto" *ngIf="seccionActiva === 'crearProyecto'">
+      <p>Crear un nuevo proyecto:</p>
+      <form (ngSubmit)="crearProyecto()">
+        <div class="mb-3">
+          <label for="nombreProyecto" class="form-label"
+            >Nombre del Proyecto</label
+          >
+          <input
+            type="text"
+            id="nombreProyecto"
+            class="form-control"
+            [(ngModel)]="nombreProyecto"
+            name="nombreProyecto"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="descripcionProyecto" class="form-label"
+            >Descripción</label
+          >
+          <textarea
+            id="descripcionProyecto"
+            class="form-control"
+            [(ngModel)]="descripcionProyecto"
+            name="descripcionProyecto"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="clienteProyecto" class="form-label">Cliente</label>
+          <select
+            id="clienteProyecto"
+            class="form-select"
+            [(ngModel)]="idClienteSeleccionado"
+            name="clienteProyecto"
+            required
+          >
+            <option
+              *ngFor="let cliente of clientes"
+              [value]="cliente.id_cliente"
+            >
+              {{ cliente.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Lista de consultores -->
+        <div class="mb-3">
+          <p>Seleccionar Consultores:</p>
+          <div *ngFor="let consultor of consultores">
+            <div class="form-check d-flex align-items-center">
+              <!-- Checkbox para seleccionar consultor -->
+              <input
+                class="form-check-input me-2"
+                type="checkbox"
+                [id]="'consultor-' + consultor.id_consultor"
+                [checked]="
+                  consultoresSeleccionados.includes(consultor.id_consultor)
+                "
+                (change)="
+                  toggleConsultorSeleccionado(consultor.id_consultor, $event)
+                "
+              />
+
+              <!-- Nombre del consultor -->
+              <label
+                class="form-check-label me-3"
+                [for]="'consultor-' + consultor.id_consultor"
+              >
+                {{ consultor.nombre }} {{ consultor.apellido }}
+              </label>
+
+              <!-- Campo para ingresar valor por hora -->
+              <input
+                type="number"
+                class="form-control w-auto"
+                placeholder="Valor por hora"
+                [(ngModel)]="consultor.valor_hora"
+                [name]="'valorHora-' + consultor.id_consultor"
+                [disabled]="
+                  !consultoresSeleccionados.includes(consultor.id_consultor)
+                "
+              />
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar Proyecto</button>
+      </form>
+    </div>
+
+    <!-- Sección: Asignar consultores a un proyecto existente -->
+    <div id="asignarConsultores" *ngIf="seccionActiva === 'asignarConsultores'">
+      <p>Asignar consultores a un proyecto existente:</p>
+
       <div class="mb-3">
-        <label for="nombreProyecto" class="form-label">Nombre del Proyecto</label>
-        <input type="text" id="nombreProyecto" class="form-control" [(ngModel)]="nombreProyecto" name="nombreProyecto"
-          required />
-      </div>
-      <div class="mb-3">
-        <label for="descripcionProyecto" class="form-label">Descripción</label>
-        <textarea id="descripcionProyecto" class="form-control" [(ngModel)]="descripcionProyecto"
-          name="descripcionProyecto" rows="3" required></textarea>
-      </div>
-      <div class="mb-3">
-        <label for="clienteProyecto" class="form-label">Cliente</label>
-        <select id="clienteProyecto" class="form-select" [(ngModel)]="idClienteSeleccionado" name="clienteProyecto"
-          required>
-          <option *ngFor="let cliente of clientes" [value]="cliente.id_cliente">
-            {{ cliente.nombre }}
+        <label for="proyectoSeleccionado" class="form-label"
+          >Seleccionar Proyecto</label
+        >
+        <select
+          id="proyectoSeleccionado"
+          class="form-select"
+          [(ngModel)]="idProyectoSeleccionado"
+          (change)="cargarConsultoresAsignados()"
+          name="proyectoSeleccionado"
+          required
+        >
+          <option
+            *ngFor="let proyecto of proyectos"
+            [value]="proyecto.id_proyecto"
+          >
+            {{ proyecto.nombre }}
           </option>
         </select>
       </div>
 
-      <!-- Lista de consultores -->
       <div class="mb-3">
         <p>Seleccionar Consultores:</p>
         <div *ngFor="let consultor of consultores">
           <div class="form-check d-flex align-items-center">
             <!-- Checkbox para seleccionar consultor -->
-            <input class="form-check-input me-2" type="checkbox" [id]="'consultor-' + consultor.id_consultor"
-              [checked]="consultoresSeleccionados.includes(consultor.id_consultor)"
-              (change)="toggleConsultorSeleccionado(consultor.id_consultor, $event)" />
+            <input
+              class="form-check-input me-2"
+              type="checkbox"
+              [id]="'consultor-' + consultor.id_consultor"
+              [checked]="consultoresAsignados.includes(consultor.id_consultor)"
+              (change)="toggleConsultorAsignado(consultor, $event)"
+            />
 
             <!-- Nombre del consultor -->
-            <label class="form-check-label me-3" [for]="'consultor-' + consultor.id_consultor">
+            <label
+              class="form-check-label me-3"
+              [for]="'consultor-' + consultor.id_consultor"
+            >
               {{ consultor.nombre }} {{ consultor.apellido }}
             </label>
 
             <!-- Campo para ingresar valor por hora -->
-            <input type="number" class="form-control w-auto" placeholder="Valor por hora"
-              [(ngModel)]="consultor.valor_hora" [name]="'valorHora-' + consultor.id_consultor"
-              [disabled]="!consultoresSeleccionados.includes(consultor.id_consultor)" />
+            <input
+              type="number"
+              class="form-control w-auto"
+              placeholder="Valor por hora"
+              [(ngModel)]="consultor.valor_hora"
+              [name]="'valorHora-' + consultor.id_consultor"
+              [disabled]="
+                !consultoresAsignados.includes(consultor.id_consultor)
+              "
+            />
           </div>
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary">Guardar Proyecto</button>
-    </form>
-  </div>
-
-  <!-- Sección: Asignar consultores a un proyecto existente -->
-  <div id="asignarConsultores" *ngIf="seccionActiva === 'asignarConsultores'">
-    <p>Asignar consultores a un proyecto existente:</p>
-
-    <div class="mb-3">
-      <label for="proyectoSeleccionado" class="form-label">Seleccionar Proyecto</label>
-      <select id="proyectoSeleccionado" class="form-select" [(ngModel)]="idProyectoSeleccionado"
-        (change)="cargarConsultoresAsignados()" name="proyectoSeleccionado" required>
-        <option *ngFor="let proyecto of proyectos" [value]="proyecto.id_proyecto">
-          {{ proyecto.nombre }}
-        </option>
-      </select>
+      <button
+        class="btn btn-primary"
+        (click)="guardarAsignaciones(asignaciones)"
+      >
+        Guardar Asignaciones
+      </button>
     </div>
 
-<div class="mb-3">
-  <p>Seleccionar Consultores:</p>
-  <div *ngFor="let consultor of consultores">
-    <div class="form-check d-flex align-items-center">
-      <!-- Checkbox para seleccionar consultor -->
-      <input class="form-check-input me-2" type="checkbox" [id]="'consultor-' + consultor.id_consultor"
-        [checked]="consultoresAsignados.includes(consultor.id_consultor)"
-        (change)="toggleConsultorAsignado(consultor, $event)" />
-
-      <!-- Nombre del consultor -->
-      <label class="form-check-label me-3" [for]="'consultor-' + consultor.id_consultor">
-        {{ consultor.nombre }} {{ consultor.apellido }}
-      </label>
-
-      <!-- Campo para ingresar valor por hora -->
-      <input type="number" class="form-control w-auto" placeholder="Valor por hora"
-        [(ngModel)]="consultor.valor_hora" [name]="'valorHora-' + consultor.id_consultor"
-        [disabled]="!consultoresAsignados.includes(consultor.id_consultor)" />
+    <!-- Sección: Crear un nuevo usuario y consultor -->
+    <div
+      id="crearUsuarioConsultor"
+      *ngIf="seccionActiva === 'crearUsuarioConsultor'"
+    >
+      <p>Crear un nuevo usuario y consultor:</p>
+      <form (ngSubmit)="crearUsuarioYConsultor()">
+        <div class="mb-3">
+          <label for="emailUsuario" class="form-label"
+            >Correo Electrónico</label
+          >
+          <input
+            type="email"
+            id="emailUsuario"
+            class="form-control"
+            [(ngModel)]="emailUsuario"
+            name="emailUsuario"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="nombreConsultor" class="form-label"
+            >Nombre del Consultor</label
+          >
+          <input
+            type="text"
+            id="nombreConsultor"
+            class="form-control"
+            [(ngModel)]="nombreConsultor"
+            name="nombreConsultor"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="apellidoConsultor" class="form-label"
+            >Apellido del Consultor</label
+          >
+          <input
+            type="text"
+            id="apellidoConsultor"
+            class="form-control"
+            [(ngModel)]="apellidoConsultor"
+            name="apellidoConsultor"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">
+          Crear Usuario y Consultor
+        </button>
+      </form>
     </div>
-  </div>
-</div>
-
-    <button class="btn btn-primary" (click)="guardarAsignaciones(asignaciones)">Guardar Asignaciones</button>
-  </div>
-
-  <!-- Sección: Crear un nuevo usuario y consultor -->
-  <div id="crearUsuarioConsultor" *ngIf="seccionActiva === 'crearUsuarioConsultor'">
-    <p>Crear un nuevo usuario y consultor:</p>
-    <form (ngSubmit)="crearUsuarioYConsultor()">
-      <div class="mb-3">
-        <label for="emailUsuario" class="form-label">Correo Electrónico</label>
-        <input type="email" id="emailUsuario" class="form-control" [(ngModel)]="emailUsuario" name="emailUsuario"
-          required />
-      </div>
-      <div class="mb-3">
-        <label for="nombreConsultor" class="form-label">Nombre del Consultor</label>
-        <input type="text" id="nombreConsultor" class="form-control" [(ngModel)]="nombreConsultor"
-          name="nombreConsultor" required />
-      </div>
-      <div class="mb-3">
-        <label for="apellidoConsultor" class="form-label">Apellido del Consultor</label>
-        <input type="text" id="apellidoConsultor" class="form-control" [(ngModel)]="apellidoConsultor"
-          name="apellidoConsultor" required />
-      </div>
-      <button type="submit" class="btn btn-primary">Crear Usuario y Consultor</button>
-    </form>
   </div>
 </div>

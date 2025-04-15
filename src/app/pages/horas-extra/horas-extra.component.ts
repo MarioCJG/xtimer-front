@@ -21,6 +21,7 @@ import { ViewEncapsulation } from '@angular/core';
 import interactionPlugin from '@fullcalendar/interaction';
 import { AfterViewInit } from '@angular/core';
 
+import { DarkModeService } from '../../services/dark-mode.service';
 
 
 @Component({
@@ -34,7 +35,6 @@ import { AfterViewInit } from '@angular/core';
 export class HorasExtraComponent implements AfterViewInit {
     @ViewChild('fullCalendar') fullCalendarComponent!: FullCalendarComponent;
     fechasMarcadas: string[] = [];
-    modoOscuro = false;
     horasAgrupadas: string[] = [];
     fecha: string = '';
     horaInicio: string = '';
@@ -101,10 +101,9 @@ export class HorasExtraComponent implements AfterViewInit {
     copiaGrid: { selected: boolean }[][] = []; // Copia de las filas seleccionadas del grid
 
 
-    constructor(private horasExtraService: HorasExtraService, private authService: AuthService) { }
+    constructor(public darkModeService: DarkModeService, private horasExtraService: HorasExtraService, private authService: AuthService) { }
 
     async ngOnInit() {
-        document.body.classList.add('light-mode');
         this.generarHorasAgrupadas();
         this.generarHorarios();
         this.cargarProyectos();
@@ -138,6 +137,7 @@ export class HorasExtraComponent implements AfterViewInit {
 
         this.seleccionarMesActual();
 
+        this.darkModeService.aplicarModo();
     }
 
     ngAfterViewInit(): void {
@@ -217,30 +217,12 @@ export class HorasExtraComponent implements AfterViewInit {
 
     }
 
-
-
-
     getResumenColor(item: any): string {
         if (item.extrasMayorA0) return '#5bc0de'; // celeste
         if (item.esMayorOIgualA8) return '#5cb85c'; // verde
         if (item.total_horas > 0) return '#f0ad4e'; // naranjo
         return '#d9534f'; // rojo
     }
-
-    toggleModo() {
-        this.modoOscuro = !this.modoOscuro;
-
-        const body = document.body;
-        if (this.modoOscuro) {
-            body.classList.add('dark-mode');
-            body.classList.remove('light-mode');
-        } else {
-            body.classList.add('light-mode');
-            body.classList.remove('dark-mode');
-        }
-    }
-
-
 
     seleccionarProyecto(proyecto: any) {
         // Asignar los valores a la variable proyectoSeleccionadoInfo

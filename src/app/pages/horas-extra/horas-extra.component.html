@@ -1,14 +1,20 @@
 <div class="container-fluid px-4 mt-5">
-  <div class="modo-switch d-flex align-items-center gap-2 mb-4">
-    <span class="icon" [class.active]="!modoOscuro">🌞</span>
+  <div
+    class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end"
+  >
+    <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
     <label class="switch">
-      <input type="checkbox" [checked]="modoOscuro" (change)="toggleModo()" />
+      <input
+        type="checkbox"
+        [checked]="darkModeService.modoOscuro"
+        (change)="darkModeService.toggleModo()"
+      />
       <span class="slider round"></span>
     </label>
-    <span class="icon" [class.active]="modoOscuro">🌙</span>
+    <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
   </div>
 
-  <h2 class="mb-4">Registrar Horas</h2>
+  <h2 class="seccion-titulo">Registrar Horas</h2>
 
   <!-- Selector de Mes -->
   <div class="d-flex gap-2 mb-3">
@@ -35,7 +41,7 @@
   </div>
 
   <!-- Semanas -->
-  <div *ngIf="mesSeleccionado" class="mb-4">
+  <div *ngIf="mesSeleccionado" class="seccion-titulo">
     <h5>Semanas del mes:</h5>
     <div class="d-flex flex-wrap gap-2">
       <button
@@ -53,7 +59,7 @@
   </div>
 
   <!-- Días de la semana -->
-  <div *ngIf="diasSeleccionados.length > 0" class="mb-4">
+  <div *ngIf="diasSeleccionados.length > 0" class="seccion-titulo">
     <h5>Días de la semana seleccionada:</h5>
     <div class="d-flex flex-wrap gap-2">
       <button
@@ -71,13 +77,13 @@
   </div>
 
   <!-- Fecha seleccionada -->
-  <div *ngIf="fechaSeleccionada" class="mb-3">
+  <div *ngIf="fechaSeleccionada" class="seccion-titulo">
     <h5>📅 Fecha seleccionada: {{ fechaSeleccionada }}</h5>
   </div>
 
   <!-- Calendario -->
   <div class="mb-5">
-    <h4 class="text-center mb-3">📆 Calendario del Mes</h4>
+    <h4 class="text-center seccion-titulo">📆 Calendario del Mes</h4>
     <full-calendar
       #fullCalendar
       [options]="calendarOptions"

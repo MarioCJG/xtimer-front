@@ -348,3 +348,22 @@ input:checked + .slider:before {
   transition: background-color 0.2s;
 }
 
+
+/* 🎯 Encabezados destacados */
+.seccion-titulo {
+  font-size: 1.4rem;
+  font-weight: 600;
+  background-color: #f0f8ff;
+  border-left: 6px solid #007bff;
+  padding: 10px 15px;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  border-radius: 18px;
+}
+
+body.dark-mode .seccion-titulo {
+  background-color: #1e2a3a;
+  border-left-color: #fcda18;
+  color: #f0f0f0;
+}
+
