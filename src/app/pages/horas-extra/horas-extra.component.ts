@@ -119,8 +119,6 @@ export class HorasExtraComponent implements AfterViewInit {
             firstDay: 1,
             dateClick: (arg) => this.onCalendarDateClick(arg),
             headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
                 right: ''
             }
         };
