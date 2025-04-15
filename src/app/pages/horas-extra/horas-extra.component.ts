@@ -504,9 +504,6 @@ export class HorasExtraComponent implements AfterViewInit {
         }
     }
 
-
-
-
     seleccionarMesAnterior() {
         this.mesSeleccionado = this.mesAnterior;
         console.log('Mes anterior seleccionado:', this.mesAnterior);
