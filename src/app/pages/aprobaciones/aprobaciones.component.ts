@@ -1,15 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { HorasExtraService } from '../../services/horas-extra.service';
 import { CommonModule } from '@angular/common';
+import { DarkModeService } from '../../services/dark-mode.service';
+
 
 @Component({
     selector: 'app-aprobaciones',
     standalone: true,
     templateUrl: './aprobaciones.component.html',
     styleUrls: ['./aprobaciones.component.css'],
+    encapsulation: ViewEncapsulation.None,
     imports: [CommonModule]
 })
-export class AprobacionesComponent {
+export class AprobacionesComponent implements OnInit {
     horasPendientes: any[] = [];
     idAprobador: number = 1; // Aquí debes obtener dinámicamente el ID del usuario autenticado
 
@@ -18,10 +21,12 @@ export class AprobacionesComponent {
     detallesHorasExtra: any[] = []; // Variable para almacenar los detalles de horas extra
 
 
-    constructor(private horasExtraService: HorasExtraService) { }
+    constructor(private horasExtraService: HorasExtraService, public darkModeService: DarkModeService) { }
 
     ngOnInit() {
         this.cargarHorasPendientes();
+
+        this.darkModeService.aplicarModo();
         this.cargarResumenHoras(); // Cargar el resumen de horas al iniciar el componente
     }
 

@@ -1,15 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { DarkModeService } from '../../services/dark-mode.service';
+
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css'],
+  encapsulation: ViewEncapsulation.None,
   imports: [CommonModule, FormsModule, HttpClientModule] // Importar módulos necesarios
 })
+
 export class AdminComponent {
   nombreCliente: string = ''; // Campo para el nombre del cliente
   contactoCliente: string = ''; // Campo para el contacto
@@ -58,7 +62,7 @@ export class AdminComponent {
 
   asignaciones: any[] = []; // Inicializar como un arreglo vacío
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, public darkModeService: DarkModeService) { }
 
   ngOnInit() {
     this.cargarClientes();
@@ -69,6 +73,9 @@ export class AdminComponent {
     this.cargarAreas();
 
     this.mostrarSeccion("crearCliente");
+
+    this.darkModeService.aplicarModo(); // Aplica el modo guardado al cargar
+
 
   }
 
@@ -190,24 +197,24 @@ mostrarSeccion(seccion: string) {
       );
   }
 
-toggleConsultorAsignado(consultor: any, event: any) {
-  if (event.target.checked) {
-    // Agregar el consultor a la lista de asignados
-    if (!this.consultoresAsignados.includes(consultor.id_consultor)) {
-      this.consultoresAsignados.push(consultor.id_consultor);
+  toggleConsultorAsignado(consultor: any, event: any) {
+    if (event.target.checked) {
+      // Agregar el consultor a la lista de asignados
+      if (!this.consultoresAsignados.includes(consultor.id_consultor)) {
+        this.consultoresAsignados.push(consultor.id_consultor);
+      }
+    } else {
+      // Eliminar el consultor de la lista de asignados
+      this.consultoresAsignados = this.consultoresAsignados.filter(
+        id => id !== consultor.id_consultor
+      );
+
+      // Reiniciar el valor por hora si se deselecciona
+      consultor.valor_hora = null;
     }
-  } else {
-    // Eliminar el consultor de la lista de asignados
-    this.consultoresAsignados = this.consultoresAsignados.filter(
-      id => id !== consultor.id_consultor
-    );
 
-    // Reiniciar el valor por hora si se deselecciona
-    consultor.valor_hora = null;
+    console.log('Consultores asignados:', this.consultoresAsignados);
   }
-
-  console.log('Consultores asignados:', this.consultoresAsignados);
-}
 
 guardarAsignaciones(asignaciones: any) {
   // Construir las asignaciones con el valor por hora

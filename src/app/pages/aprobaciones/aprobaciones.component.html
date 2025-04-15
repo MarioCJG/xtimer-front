@@ -1,33 +1,47 @@
-<div class="container mt-5">
-    <h2>Panel de Aprobaciones</h2>
+<div class="container-fluid mt-5">
+  <div class="contenido-aprobaciones">
+    <div
+      class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end"
+    >
+      <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
+      <label class="switch">
+        <input
+          type="checkbox"
+          [checked]="darkModeService.modoOscuro"
+          (change)="darkModeService.toggleModo()"
+        />
+        <span class="slider round"></span>
+      </label>
+      <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
+    </div>
 
-    <table class="table table-bordered">
+    <h2  class="titulo-centrado">Panel de Aprobaciones</h2>
+
+    <table class="table table-bordered  table-dark">
         <thead class="table-dark">
             <tr>
-                <th>ID Resumen</th>
                 <th>Usuario</th>
-                <th>Consultor</th>
+                <th>Proyecto</th>
                 <th>Fecha</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
                 <th>Total Horas</th>
-                <th>Horas Extras</th>
-                <th>Estado</th>
+                <th>Descripción</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let hora of resumenHoras">
-                <td (click)="imprimirId(hora.id_resumen)" style="cursor: pointer;">
-                    {{ hora.id_resumen }}
-                </td>
-                <td>{{ hora.usuario_email }}</td>
-                <td>{{ hora.consultor_nombre }}</td>
+            <tr *ngFor="let hora of horasPendientes">
+                <td>{{ hora.usuario_completo }}</td>
+                <td>{{ hora.proyecto_completo }}</td>
                 <td>{{ hora.fecha | date }}</td>
+                <td>{{ hora.hora_inicio }}</td>
+                <td>{{ hora.hora_fin }}</td>
                 <td>{{ hora.total_horas }}</td>
-                <td>{{ hora.horas_extras }}</td>
-                <td>{{ hora.aprobacion }}</td>
+                <td>{{ hora.descripcion }}</td>
                 <td>
-                    <button class="btn btn-success btn-sm" (click)="aprobarHoraExtra(hora.id_resumen)">Aprobar</button>
-                    <button class="btn btn-danger btn-sm" (click)="rechazarHoraExtra(hora.id_resumen)">Rechazar</button>
+                    <button class="btn btn-success btn-sm" (click)="aprobarHoraExtra(hora.id)">Aprobar</button>
+                    <button class="btn btn-danger btn-sm" (click)="rechazarHoraExtra(hora.id)">Rechazar</button>
                 </td>
             </tr>
         </tbody>
