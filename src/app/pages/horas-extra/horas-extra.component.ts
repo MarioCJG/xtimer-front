@@ -76,7 +76,7 @@ export class HorasExtraComponent implements AfterViewInit {
 
     resumenHoras: any[] = [];
 
-    calendarOptions!: CalendarOptions; // ✅ Declaración correcta
+    calendarOptions!: CalendarOptions; 
 
 
     proyectoSeleccionadoInfo: {
@@ -117,6 +117,7 @@ export class HorasExtraComponent implements AfterViewInit {
             events: [],
             locale: 'es',
             selectable: true,
+            firstDay: 1,
             dateClick: (arg) => this.onCalendarDateClick(arg),
             headerToolbar: {
                 left: 'prev,next today',
@@ -149,8 +150,7 @@ export class HorasExtraComponent implements AfterViewInit {
             } else {
                 console.warn('⚠️ No se pudo acceder al calendario');
             }
-
-            // 👇 Agrega aquí detección manual de clics
+           
             const celdas = document.querySelectorAll('.fc-daygrid-day');
 
             celdas.forEach((celda) => {
