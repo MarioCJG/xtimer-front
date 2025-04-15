@@ -16,7 +16,9 @@
         </thead>
         <tbody>
             <tr *ngFor="let hora of resumenHoras">
-                <td>{{ hora.id_resumen }}</td>
+                <td (click)="imprimirId(hora.id_resumen)" style="cursor: pointer;">
+                    {{ hora.id_resumen }}
+                </td>
                 <td>{{ hora.usuario_email }}</td>
                 <td>{{ hora.consultor_nombre }}</td>
                 <td>{{ hora.fecha | date }}</td>

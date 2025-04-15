@@ -22,6 +22,18 @@ export class AprobacionesComponent {
         this.cargarResumenHoras(); // Cargar el resumen de horas al iniciar el componente
     }
 
+    imprimirId(id_resumen: number) {
+        console.log('ID Resumen seleccionado:', id_resumen);
+        this.horasExtraService.obtenerHorasPorResumen(id_resumen).subscribe(
+            res => {
+                console.log('Detalles de horas extra:', res);
+            },
+            err => {
+                console.error('❌ Error al obtener detalles de horas extra:', err);
+            }
+        );
+    }
+
     cargarResumenHoras() {
         this.horasExtraService.obtenerResumenHoras().subscribe(
             res => {
