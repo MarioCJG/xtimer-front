@@ -16,45 +16,75 @@
     </div>
 
     <h2  class="titulo-centrado">Panel de Aprobaciones</h2>
+<div class="container-fluid mt-5">
+  <div class="contenido-aprobaciones">
+    <div
+      class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end"
+    >
+      <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
+      <label class="switch">
+        <input
+          type="checkbox"
+          [checked]="darkModeService.modoOscuro"
+          (change)="darkModeService.toggleModo()"
+        />
+        <span class="slider round"></span>
+      </label>
+      <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
+    </div>
 
-    <table class="table table-bordered table-dark">
-      <thead class="table-dark">
-        <tr>
-          <th>Usuario</th>
-          <th>Proyecto</th>
-          <th>Fecha</th>
-          <th>Hora Inicio</th>
-          <th>Hora Fin</th>
-          <th>Total Horas</th>
-          <th>Descripción</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let hora of horasPendientes">
-          <td>{{ hora.usuario_completo }}</td>
-          <td>{{ hora.proyecto_completo }}</td>
-          <td>{{ hora.fecha | date }}</td>
-          <td>{{ hora.hora_inicio }}</td>
-          <td>{{ hora.hora_fin }}</td>
-          <td>{{ hora.total_horas }}</td>
-          <td>{{ hora.descripcion }}</td>
-          <td>
-            <button
-              class="btn btn-success btn-sm"
-              (click)="aprobarHoraExtra(hora.id)"
-            >
-              Aprobar
-            </button>
-            <button
-              class="btn btn-danger btn-sm"
-              (click)="rechazarHoraExtra(hora.id)"
-            >
-              Rechazar
-            </button>
-          </td>
-        </tr>
-      </tbody>
+    <h2  class="titulo-centrado">Panel de Aprobaciones</h2>
+
+    <table class="table table-bordered  table-dark">
+        <thead class="table-dark">
+            <tr>
+                <th>ID Resumen</th>
+                <th>Usuario</th>
+                <th>Consultor</th>
+                <th>Fecha</th>
+                <th>Total Horas</th>
+                <th>Horas Extras</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let hora of resumenHoras">
+                <td (click)="imprimirId(hora.id_resumen)" style="cursor: pointer;">
+                    {{ hora.id_resumen }}
+                </td>
+                <td>{{ hora.usuario_email }}</td>
+                <td>{{ hora.consultor_nombre }}</td>
+                <td>{{ hora.fecha | date }}</td>
+                <td>{{ hora.total_horas }}</td>
+                <td>{{ hora.horas_extras }}</td>
+                <td>{{ hora.aprobacion }}</td>
+                <td>
+                    <button class="btn btn-success btn-sm" (click)="aprobarHoraExtra(hora.id_resumen)">Aprobar</button>
+                    <button class="btn btn-danger btn-sm" (click)="rechazarHoraExtra(hora.id_resumen)">Rechazar</button>
+                </td>
+            </tr>
+        </tbody>
     </table>
   </div>
+        <!-- Tabla para mostrar los detalles de horas extra -->
+        <div *ngIf="detallesHorasExtra.length > 0" class="mt-4">
+            <h3>Detalles de Horas Extra </h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Proyecto Completo</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let detalle of detallesHorasExtra">
+                        <td>{{ detalle.proyecto_completo }}</td>
+                        <td>{{ detalle.hora_inicio }}</td>
+                        <td>{{ detalle.hora_fin }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 </div>

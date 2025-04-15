@@ -14,7 +14,8 @@ import { DarkModeService } from '../../services/dark-mode.service';
   imports: [CommonModule, FormsModule, HttpClientModule] // Importar módulos necesarios
 })
 
-export class AdminComponent {
+
+export class AdminComponent implements OnInit {
   nombreCliente: string = ''; // Campo para el nombre del cliente
   contactoCliente: string = ''; // Campo para el contacto
   emailCliente: string = ''; // Campo para el email
@@ -83,6 +84,13 @@ export class AdminComponent {
 
   mostrarSeccion(seccion: string) {
     this.seccionActiva = seccion; // Cambiar la sección activa
+
+    // Limpiar los valores de "valor_hora" de todos los consultores
+    this.consultores.forEach(consultor => {
+      consultor.valor_hora = null; // Reinicia el valor por hora
+    });
+
+    console.log('Sección cambiada a:', seccion);
   }
 
   onCargoChange(event: any) {
@@ -167,26 +175,22 @@ export class AdminComponent {
   }
 
   cargarConsultoresAsignados() {
-
-    console.log("Consultores asignados a proyecto:", this.consultoresAsignados);
-    console.log(this.consultores);
     if (!this.idProyectoSeleccionado) return;
 
     this.http
       .get<any[]>(`http://localhost:3000/api/proyectos-asignados/${this.idProyectoSeleccionado}`)
       .subscribe(
         res => {
-          // Actualizar la lista de consultores asignados
+          // Actualizar la lista de consultores asignados con sus valores por hora
           this.consultoresAsignados = res.map(asignacion => asignacion.id_usuario);
 
-          // Sincronizar la lista de asignaciones
-          this.asignaciones = this.consultoresAsignados.map(idConsultor => ({
-            id_usuario: idConsultor,
-            id_proyecto: this.idProyectoSeleccionado
-          }));
+          // Sincronizar los valores por hora con la lista de consultores
+          this.consultores.forEach(consultor => {
+            const asignado = res.find(c => c.id_usuario === consultor.id_consultor);
+            consultor.valor_hora = asignado ? asignado.valor_hora : null;
+          });
 
           console.log('Consultores asignados cargados:', this.consultoresAsignados);
-          console.log('Asignaciones sincronizadas:', this.asignaciones);
         },
         err => {
           console.error('Error al cargar consultores asignados:', err);
@@ -209,265 +213,273 @@ export class AdminComponent {
       // Reiniciar el valor por hora si se deselecciona
       consultor.valor_hora = null;
     }
-
+    // Reiniciar el valor por hora si se deselecciona
+    consultor.valor_hora = null;
     console.log('Consultores asignados:', this.consultoresAsignados);
   }
 
-  guardarAsignaciones(asignaciones: any) {
-    console.log('Asignaciones a guardar:', this.asignaciones);
+    
 
-    // Imprimir cada asignación con el valor por hora
-    this.asignaciones.forEach(asignacion => {
-      const consultor = this.consultores.find(c => c.id_consultor === asignacion.id_usuario);
-      console.log(`Consultor ID: ${asignacion.id_usuario}, Proyecto ID: ${asignacion.id_proyecto}, Valor por hora: ${consultor?.valor_hora || 0}`);
-    });
 
-    // Verificar si la lista de asignaciones está vacía
-    if (!this.asignaciones || this.asignaciones.length === 0) {
-      console.warn('Advertencia: El proyecto quedará sin ninguna asignación.');
+guardarAsignaciones(asignaciones: any) {
+  // Construir las asignaciones con el valor por hora
+  const asignacionesConValorHora = this.consultores
+    .filter(consultor => this.consultoresAsignados.includes(consultor.id_consultor))
+    .map(consultor => ({
+      id_usuario: consultor.id_consultor,
+      id_proyecto: this.idProyectoSeleccionado,
+      valor_hora: consultor.valor_hora || 0 // Asegúrate de enviar un valor por defecto si no se ingresó
+    }));
+
+  console.log('Asignaciones a guardar:', asignacionesConValorHora);
+
+  // Verificar si la lista de asignaciones está vacía
+  if (!asignacionesConValorHora || asignacionesConValorHora.length === 0) {
+    console.warn('Advertencia: El proyecto quedará sin ninguna asignación.');
+    return;
+  }
+
+  // Enviar la lista de asignaciones al backend
+  this.http.post('http://localhost:3000/api/proyectos-asignados/actualizar', asignacionesConValorHora).subscribe(
+    res => {
+      console.log('Asignaciones actualizadas con éxito:', res);
+      this.mensajeAsignacion = 'Asignaciones guardadas correctamente.';
+    },
+    err => {
+      console.error('Error al guardar asignaciones:', err);
+      this.mensajeAsignacion = 'Error al guardar las asignaciones.';
     }
+  );
+}
 
-    // Enviar la lista de asignaciones al backend
-    this.http.post('http://localhost:3000/api/proyectos-asignados/actualizar', this.asignaciones).subscribe(
-      res => {
-        console.log('Asignaciones actualizadas con éxito:', res);
-        this.mensajeAsignacion = 'Asignaciones guardadas correctamente.';
-      },
-      err => {
-        console.error('Error al guardar asignaciones:', err);
-        this.mensajeAsignacion = 'Error al guardar las asignaciones.';
-      }
-    );
+crearCliente() {
+  if (!this.nombreCliente.trim() || !this.contactoCliente.trim() || !this.emailCliente.trim() || !this.telefonoCliente.trim()) {
+    this.mensaje = 'Todos los campos son obligatorios.';
+    return;
   }
 
-  crearCliente() {
-    if (!this.nombreCliente.trim() || !this.contactoCliente.trim() || !this.emailCliente.trim() || !this.telefonoCliente.trim()) {
-      this.mensaje = 'Todos los campos son obligatorios.';
-      return;
+  const nuevoCliente = {
+    nombre: this.nombreCliente,
+    contacto: this.contactoCliente,
+    email: this.emailCliente,
+    telefono: this.telefonoCliente
+  };
+
+  this.http.post('http://localhost:3000/api/clientes', nuevoCliente).subscribe(
+    res => {
+      this.mensaje = 'Cliente creado con éxito.';
+      this.limpiarFormulario(); // Limpiar los campos
+    },
+    err => {
+      console.error('Error al crear el cliente:', err);
+      this.mensaje = 'Error al crear el cliente.';
     }
+  );
+}
 
-    const nuevoCliente = {
-      nombre: this.nombreCliente,
-      contacto: this.contactoCliente,
-      email: this.emailCliente,
-      telefono: this.telefonoCliente
-    };
+limpiarFormulario() {
+  this.nombreCliente = '';
+  this.contactoCliente = '';
+  this.emailCliente = '';
+  this.telefonoCliente = '';
+}
 
-    this.http.post('http://localhost:3000/api/clientes', nuevoCliente).subscribe(
-      res => {
-        this.mensaje = 'Cliente creado con éxito.';
-        this.limpiarFormulario(); // Limpiar los campos
-      },
-      err => {
-        console.error('Error al crear el cliente:', err);
-        this.mensaje = 'Error al crear el cliente.';
-      }
-    );
+// Método para crear un área
+crearArea() {
+  if (!this.nombreArea.trim()) {
+    this.mensajeArea = 'El nombre del área es obligatorio.';
+    return;
   }
 
-  limpiarFormulario() {
-    this.nombreCliente = '';
-    this.contactoCliente = '';
-    this.emailCliente = '';
-    this.telefonoCliente = '';
-  }
+  const nuevaArea = { nombre: this.nombreArea };
 
-  // Método para crear un área
-  crearArea() {
-    if (!this.nombreArea.trim()) {
-      this.mensajeArea = 'El nombre del área es obligatorio.';
-      return;
+  this.http.post('http://localhost:3000/api/areas', nuevaArea).subscribe(
+    res => {
+      this.mensajeArea = 'Área creada con éxito.';
+      this.limpiarFormularioArea();
+    },
+    err => {
+      console.error('Error al crear el área:', err);
+      this.mensajeArea = 'Error al crear el área.';
     }
+  );
+}
 
-    const nuevaArea = { nombre: this.nombreArea };
+limpiarFormularioArea() {
+  this.nombreArea = '';
+}
 
-    this.http.post('http://localhost:3000/api/areas', nuevaArea).subscribe(
-      res => {
-        this.mensajeArea = 'Área creada con éxito.';
-        this.limpiarFormularioArea();
-      },
-      err => {
-        console.error('Error al crear el área:', err);
-        this.mensajeArea = 'Error al crear el área.';
-      }
-    );
+// Método para crear un área
+crearCargo() {
+  if (!this.nombreCargo.trim()) {
+    this.mensajeCargo = 'El nombre del área es obligatorio.';
+    return;
   }
 
-  limpiarFormularioArea() {
-    this.nombreArea = '';
-  }
+  const nuevaArea = { nombre: this.nombreCargo };
 
-  // Método para crear un área
-  crearCargo() {
-    if (!this.nombreCargo.trim()) {
-      this.mensajeCargo = 'El nombre del área es obligatorio.';
-      return;
+  this.http.post('http://localhost:3000/api/cargos', nuevaArea).subscribe(
+    res => {
+      this.mensajeCargo = 'Área creada con éxito.';
+      this.limpiarFormularioArea();
+    },
+    err => {
+      console.error('Error al crear el área:', err);
+      this.mensajeCargo = 'Error al crear el área.';
     }
+  );
+}
 
-    const nuevaArea = { nombre: this.nombreCargo };
+limpiarFormularioCargo() {
+  this.nombreCargo = '';
+}
 
-    this.http.post('http://localhost:3000/api/cargos', nuevaArea).subscribe(
-      res => {
-        this.mensajeCargo = 'Área creada con éxito.';
-        this.limpiarFormularioArea();
-      },
-      err => {
-        console.error('Error al crear el área:', err);
-        this.mensajeCargo = 'Error al crear el área.';
-      }
-    );
+toggleConsultorSeleccionado(idConsultor: number, event: any) {
+  if (event.target.checked) {
+    this.consultoresSeleccionados.push(idConsultor);
+  } else {
+    this.consultoresSeleccionados = this.consultoresSeleccionados.filter(id => id !== idConsultor);
+  }
+}
+
+crearProyecto() {
+  if (!this.nombreProyecto.trim() || !this.descripcionProyecto.trim() || !this.idClienteSeleccionado) {
+    this.mensajeProyecto = 'Todos los campos son obligatorios.';
+    return;
   }
 
-  limpiarFormularioCargo() {
-    this.nombreCargo = '';
-  }
+  const nuevoProyecto = {
+    nombre: this.nombreProyecto,
+    descripcion: this.descripcionProyecto,
+    estado: 'pendiente',
+    id_cliente: this.idClienteSeleccionado
+  };
 
-  toggleConsultorSeleccionado(idConsultor: number, event: any) {
-    if (event.target.checked) {
-      this.consultoresSeleccionados.push(idConsultor);
-    } else {
-      this.consultoresSeleccionados = this.consultoresSeleccionados.filter(id => id !== idConsultor);
+  this.http.post('http://localhost:3000/api/proyectos', nuevoProyecto).subscribe(
+    (res: any) => {
+      const idProyecto = res.id; // ID del proyecto recién creado
+      this.asignarConsultores(idProyecto);
+    },
+    err => {
+      console.error('Error al crear el proyecto:', err);
+      this.mensajeProyecto = 'Error al crear el proyecto.';
     }
-  }
+  );
+}
 
-  crearProyecto() {
-    if (!this.nombreProyecto.trim() || !this.descripcionProyecto.trim() || !this.idClienteSeleccionado) {
-      this.mensajeProyecto = 'Todos los campos son obligatorios.';
-      return;
+asignarConsultores(idProyecto: number) {
+  const asignaciones = this.consultores
+    .filter(consultor => this.consultoresSeleccionados.includes(consultor.id_consultor))
+    .map(consultor => ({
+      id_usuario: consultor.id_consultor,
+      id_proyecto: idProyecto,
+      valor_hora: consultor.valor_hora || 0 // Asegúrate de enviar un valor por defecto si no se ingresó
+    }));
+
+  console.log('Datos enviados al backend para asignar consultores:', asignaciones);
+
+  this.http.post('http://localhost:3000/api/proyectos-asignados', asignaciones).subscribe(
+    res => {
+      this.mensajeProyecto = 'Proyecto creado y consultores asignados con éxito.';
+      this.limpiarFormularioProyecto();
+    },
+    err => {
+      console.error('Error al asignar consultores:', err);
+      this.mensajeProyecto = 'Error al asignar consultores.';
     }
+  );
+}
 
-    const nuevoProyecto = {
-      nombre: this.nombreProyecto,
-      descripcion: this.descripcionProyecto,
-      estado: 'pendiente',
-      id_cliente: this.idClienteSeleccionado
-    };
+limpiarFormularioProyecto() {
+  this.nombreProyecto = '';
+  this.descripcionProyecto = '';
+  this.idClienteSeleccionado = null;
+  this.consultoresSeleccionados = [];
+}
 
-    this.http.post('http://localhost:3000/api/proyectos', nuevoProyecto).subscribe(
-      (res: any) => {
-        const idProyecto = res.id; // ID del proyecto recién creado
-        this.asignarConsultores(idProyecto);
-      },
-      err => {
-        console.error('Error al crear el proyecto:', err);
-        this.mensajeProyecto = 'Error al crear el proyecto.';
-      }
-    );
+generarContraseña(): string {
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let contraseña = '';
+  for (let i = 0; i < 8; i++) {
+    contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  }
+  return contraseña; // Cambiar a contraseña generada
+}
+
+crearUsuario() {
+  if (!this.emailUsuario.trim()) {
+    this.mensajeUsuario = 'El correo electrónico es obligatorio.';
+    return;
   }
 
-  asignarConsultores(idProyecto: number) {
-    const asignaciones = this.consultores
-      .filter(consultor => this.consultoresSeleccionados.includes(consultor.id_consultor))
-      .map(consultor => ({
-        id_usuario: consultor.id_consultor,
-        id_proyecto: idProyecto,
-        valor_hora: consultor.valor_hora || 0 // Asegúrate de enviar un valor por defecto si no se ingresó
-      }));
+  const contraseñaGenerada = this.generarContraseña();
 
-    console.log('Datos enviados al backend para asignar consultores:', asignaciones);
-
-    this.http.post('http://localhost:3000/api/proyectos-asignados', asignaciones).subscribe(
-      res => {
-        this.mensajeProyecto = 'Proyecto creado y consultores asignados con éxito.';
-        this.limpiarFormularioProyecto();
-      },
-      err => {
-        console.error('Error al asignar consultores:', err);
-        this.mensajeProyecto = 'Error al asignar consultores.';
-      }
-    );
-  }
-
-  limpiarFormularioProyecto() {
-    this.nombreProyecto = '';
-    this.descripcionProyecto = '';
-    this.idClienteSeleccionado = null;
-    this.consultoresSeleccionados = [];
-  }
-
-  generarContraseña(): string {
-    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let contraseña = '';
-    for (let i = 0; i < 8; i++) {
-      contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  // Enviar datos al backend
+  this.http.post('http://localhost:3000/api/usuarios', { email: this.emailUsuario, password: contraseñaGenerada }).subscribe(
+    res => {
+      this.mensajeUsuario = `Usuario creado con éxito. Contraseña generada: ${contraseñaGenerada}`;
+      this.emailUsuario = ''; // Limpiar el campo
+    },
+    err => {
+      console.error('Error al crear el usuario:', err);
+      this.mensajeUsuario = 'Error al crear el usuario.';
     }
-    return contraseña; // Cambiar a contraseña generada
+  );
+}
+
+crearUsuarioYConsultor() {
+
+  if (
+    !this.emailUsuario.trim() ||
+    !this.nombreConsultor.trim() ||
+    !this.apellidoConsultor.trim() ||
+    !this.idCargoSeleccionado ||
+    !this.idRolSeleccionado ||
+    !this.idAreaSeleccionada
+  ) {
+    this.mensajeUsuario = 'Todos los campos son obligatorios.';
+    return;
   }
 
-  crearUsuario() {
-    if (!this.emailUsuario.trim()) {
-      this.mensajeUsuario = 'El correo electrónico es obligatorio.';
-      return;
+  const contraseñaGenerada = this.generarContraseña();
+
+  console.log('Datos a enviar:', {
+    email: this.emailUsuario,
+    password: contraseñaGenerada,
+    nombre: this.nombreConsultor,
+    apellido: this.apellidoConsultor,
+    id_cargo: this.idCargoSeleccionado,
+    id_rol: this.idRolSeleccionado,
+    id_area: this.idAreaSeleccionada
+  });
+
+  // Enviar datos al backend
+  this.http.post('http://localhost:3000/api/usuarios-consultores', {
+    email: this.emailUsuario,
+    password: contraseñaGenerada,
+    nombre: this.nombreConsultor,
+    apellido: this.apellidoConsultor,
+    id_cargo: this.idCargoSeleccionado,
+    id_rol: this.idRolSeleccionado,
+    id_area: this.idAreaSeleccionada
+  }).subscribe(
+    res => {
+      this.mensajeUsuario = `Usuario y consultor creados con éxito. Contraseña generada: ${contraseñaGenerada}`;
+      this.limpiarFormularioUsuarioYConsultor();
+    },
+    err => {
+      console.error('Error al crear el usuario y consultor:', err);
+      this.mensajeUsuario = 'Error al crear el usuario y consultor.';
     }
+  );
+}
 
-    const contraseñaGenerada = this.generarContraseña();
-
-    // Enviar datos al backend
-    this.http.post('http://localhost:3000/api/usuarios', { email: this.emailUsuario, password: contraseñaGenerada }).subscribe(
-      res => {
-        this.mensajeUsuario = `Usuario creado con éxito. Contraseña generada: ${contraseñaGenerada}`;
-        this.emailUsuario = ''; // Limpiar el campo
-      },
-      err => {
-        console.error('Error al crear el usuario:', err);
-        this.mensajeUsuario = 'Error al crear el usuario.';
-      }
-    );
-  }
-
-  crearUsuarioYConsultor() {
-
-    if (
-      !this.emailUsuario.trim() ||
-      !this.nombreConsultor.trim() ||
-      !this.apellidoConsultor.trim() ||
-      !this.idCargoSeleccionado ||
-      !this.idRolSeleccionado ||
-      !this.idAreaSeleccionada
-    ) {
-      this.mensajeUsuario = 'Todos los campos son obligatorios.';
-      return;
-    }
-
-    const contraseñaGenerada = this.generarContraseña();
-
-    console.log('Datos a enviar:', {
-      email: this.emailUsuario,
-      password: contraseñaGenerada,
-      nombre: this.nombreConsultor,
-      apellido: this.apellidoConsultor,
-      id_cargo: this.idCargoSeleccionado,
-      id_rol: this.idRolSeleccionado,
-      id_area: this.idAreaSeleccionada
-    });
-
-    // Enviar datos al backend
-    this.http.post('http://localhost:3000/api/usuarios-consultores', {
-      email: this.emailUsuario,
-      password: contraseñaGenerada,
-      nombre: this.nombreConsultor,
-      apellido: this.apellidoConsultor,
-      id_cargo: this.idCargoSeleccionado,
-      id_rol: this.idRolSeleccionado,
-      id_area: this.idAreaSeleccionada
-    }).subscribe(
-      res => {
-        this.mensajeUsuario = `Usuario y consultor creados con éxito. Contraseña generada: ${contraseñaGenerada}`;
-        this.limpiarFormularioUsuarioYConsultor();
-      },
-      err => {
-        console.error('Error al crear el usuario y consultor:', err);
-        this.mensajeUsuario = 'Error al crear el usuario y consultor.';
-      }
-    );
-  }
-
-  limpiarFormularioUsuarioYConsultor() {
-    this.emailUsuario = '';
-    this.nombreConsultor = '';
-    this.apellidoConsultor = '';
-    this.idCargoSeleccionado = null;
-    this.idRolSeleccionado = null;
-    this.idAreaSeleccionada = null;
-  }
+limpiarFormularioUsuarioYConsultor() {
+  this.emailUsuario = '';
+  this.nombreConsultor = '';
+  this.apellidoConsultor = '';
+  this.idCargoSeleccionado = null;
+  this.idRolSeleccionado = null;
+  this.idAreaSeleccionada = null;
+}
 }

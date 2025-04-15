@@ -72,7 +72,29 @@ export class HorasExtraService {
         });
     }
 
+    obtenerResumenHoras() {
+        return this.http.get<any[]>('http://localhost:3000/api/resumen');
+    }
 
+    actualizarAprobacion(id_resumen: number, aprobacion: string): Observable<any> {
+        const datos = { id_resumen, aprobacion };
+        return this.http.put(`${this.apiUrl}/resumen/actualizar-aprobacion`, datos);
+    }
+
+    obtenerHorasPorResumen(id_resumen_horas: number): Observable<any[]> {
+        const url = `${this.apiUrl}/horas-extra/por-resumen`;
+        return this.http.get<any[]>(`${url}?id_resumen_horas=${id_resumen_horas}`);
+    }
+
+    obtenerComentariosPorResumen(id_resumen: number, fecha: string): Observable<any[]> {
+        const url = `${this.apiUrl}/comentarios/comentarios-por-resumen`;
+        return this.http.get<any[]>(url, {
+            params: {
+                id_resumen: id_resumen.toString(),
+                fecha
+            }
+        });
+    }
     /**
      * Actualiza el estado de una hora extra.
      * @param id - ID de la hora extra.
