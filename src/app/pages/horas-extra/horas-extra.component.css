@@ -139,6 +139,14 @@
   font-weight: 500;
 }
 
+.fc-mini {
+  width: 700px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+
+
 /* 🎨 Colores eventos */
 ::ng-deep .fc-event.bg-verde {
   background-color: #5cb85c !important;
