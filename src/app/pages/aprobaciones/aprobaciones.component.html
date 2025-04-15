@@ -20,35 +20,37 @@
     <table class="table table-bordered  table-dark">
         <thead class="table-dark">
             <tr>
+                <th>ID Resumen</th>
                 <th>Usuario</th>
-                <th>Proyecto</th>
+                <th>Consultor</th>
                 <th>Fecha</th>
-                <th>Hora Inicio</th>
-                <th>Hora Fin</th>
                 <th>Total Horas</th>
-                <th>Descripción</th>
+                <th>Horas Extras</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let hora of horasPendientes">
-                <td>{{ hora.usuario_completo }}</td>
-                <td>{{ hora.proyecto_completo }}</td>
+            <tr *ngFor="let hora of resumenHoras">
+                <td (click)="imprimirId(hora.id_resumen)" style="cursor: pointer;">
+                    {{ hora.id_resumen }}
+                </td>
+                <td>{{ hora.usuario_email }}</td>
+                <td>{{ hora.consultor_nombre }}</td>
                 <td>{{ hora.fecha | date }}</td>
-                <td>{{ hora.hora_inicio }}</td>
-                <td>{{ hora.hora_fin }}</td>
                 <td>{{ hora.total_horas }}</td>
-                <td>{{ hora.descripcion }}</td>
+                <td>{{ hora.horas_extras }}</td>
+                <td>{{ hora.aprobacion }}</td>
                 <td>
-                    <button class="btn btn-success btn-sm" (click)="aprobarHoraExtra(hora.id)">Aprobar</button>
-                    <button class="btn btn-danger btn-sm" (click)="rechazarHoraExtra(hora.id)">Rechazar</button>
+                    <button class="btn btn-success btn-sm" (click)="aprobarHoraExtra(hora.id_resumen)">Aprobar</button>
+                    <button class="btn btn-danger btn-sm" (click)="rechazarHoraExtra(hora.id_resumen)">Rechazar</button>
                 </td>
             </tr>
         </tbody>
     </table>
         <!-- Tabla para mostrar los detalles de horas extra -->
         <div *ngIf="detallesHorasExtra.length > 0" class="mt-4">
-            <h3>Detalles de Horas Extra</h3>
+            <h3>Detalles de Horas Extra </h3>
             <table class="table table-striped">
                 <thead>
                     <tr>

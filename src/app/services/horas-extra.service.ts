@@ -85,6 +85,16 @@ export class HorasExtraService {
         const url = `${this.apiUrl}/horas-extra/por-resumen`;
         return this.http.get<any[]>(`${url}?id_resumen_horas=${id_resumen_horas}`);
     }
+
+    obtenerComentariosPorResumen(id_resumen: number, fecha: string): Observable<any[]> {
+        const url = `${this.apiUrl}/comentarios/comentarios-por-resumen`;
+        return this.http.get<any[]>(url, {
+            params: {
+                id_resumen: id_resumen.toString(),
+                fecha
+            }
+        });
+    }
     /**
      * Actualiza el estado de una hora extra.
      * @param id - ID de la hora extra.
