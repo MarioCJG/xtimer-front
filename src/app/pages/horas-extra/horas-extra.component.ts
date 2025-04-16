@@ -104,7 +104,7 @@ export class HorasExtraComponent implements AfterViewInit {
     constructor(public darkModeService: DarkModeService, private horasExtraService: HorasExtraService, private authService: AuthService) { }
 
     async ngOnInit() {
-        this.generarHorasAgrupadas();
+        // this.generarHorasAgrupadas();
         this.generarHorarios();
         this.cargarProyectos();
         this.cargarHorasExtra();
@@ -788,10 +788,10 @@ export class HorasExtraComponent implements AfterViewInit {
 
         console.log('Copia de grid con las filas seleccionadas:', this.copiaGrid);
 
-        // Crear la cuadrícula con filas basadas en proyectosFiltrados y columnas basadas en horarios
-        this.grid = Array.from({ length: this.proyectosFiltrados.length }, () =>
-            Array.from({ length: this.horarios.length * 2 }, () => ({ selected: false }))
-        );
+        // // Crear la cuadrícula con filas basadas en proyectosFiltrados y columnas basadas en horarios
+        // this.grid = Array.from({ length: this.proyectosFiltrados.length }, () =>
+        //     Array.from({ length: this.horarios.length * 2 }, () => ({ selected: false }))
+        // );
     }
 
     initializeGrid() {
@@ -1005,14 +1005,14 @@ export class HorasExtraComponent implements AfterViewInit {
         return `${anio}-${mes}-${dia}`;
     }
 
-    generarHorasAgrupadas() {
-        const baseHora = new Date('2024-01-01T08:00:00');
-        for (let i = 0; i < 16; i++) {
-            const hora = baseHora.getHours().toString().padStart(2, '0') + ':00';
-            this.horasAgrupadas.push(hora);
-            baseHora.setHours(baseHora.getHours() + 1);
-        }
-    }
+    // generarHorasAgrupadas() {
+    //     const baseHora = new Date('2024-01-01T08:00:00');
+    //     for (let i = 0; i < 16; i++) {
+    //         const hora = baseHora.getHours().toString().padStart(2, '0') + ':00';
+    //         this.horasAgrupadas.push(hora);
+    //         baseHora.setHours(baseHora.getHours() + 1);
+    //     }
+    // }
 
     // Función para calcular el horario basado en el índice de la columna
     calcularHorario(colIndex: number): string {

@@ -131,7 +131,7 @@
         </thead>
 
         <tbody>
-          <tr *ngFor="let proyecto of proyectosFiltrados; let rowIndex = index">
+          <tr *ngFor="let proyecto of proyectos; let rowIndex = index">
             <td class="proyecto-cell" (click)="seleccionarProyecto(proyecto)">
               {{ proyecto.nombre_proyecto }}
             </td>
