@@ -458,52 +458,66 @@ export class HorasExtraComponent implements AfterViewInit {
         }
 
         return new Promise<void>((resolve, reject) => {
-            if (this.id_usuario != null) {
-                this.horasExtraService.obtenerResumenPorUsuario(this.id_usuario).subscribe(
-                    res => {
-                        console.log('Resumen de horas obtenido:', res);
+            this.horasExtraService.obtenerResumenPorUsuario(this.id_usuario!).subscribe(
+                res => {
+                    console.log('Resumen de horas obtenido:', res);
 
-                        // Procesar los datos obtenidos
-                        this.resumenHoras = res.data.map((item: any) => {
-                            const totalHorasDecimal = parseFloat(item.total_horas);
-                            const horasExtrasDecimal = parseFloat(item.horas_extras);
+                    this.resumenHoras = res.data.map((item: any) => {
+                        const totalHorasDecimal = this.convertirHorasADecimal(item.total_horas);
+                        const horasExtrasDecimal = this.convertirHorasADecimal(item.horas_extras);
+                        const totalConExtras = totalHorasDecimal + horasExtrasDecimal;
 
-                            return {
-                                fecha: new Date(item.fecha).toISOString().split('T')[0], // Convertir fecha a formato YYYY-MM-DD
-                                total_horas: item.total_horas,
-                                horas_extras: item.horas_extras,
-                                esMayorA0: totalHorasDecimal > 0, // Saber si total_horas es mayor a 0
-                                esMayorOIgualA8: totalHorasDecimal >= 8, // Saber si total_horas es igual o mayor a 8
-                                extrasMayorA0: horasExtrasDecimal > 0 // Saber si horas_extras es mayor a 0
-                            };
-                        });
+                        return {
+                            fecha: new Date(item.fecha).toISOString().split('T')[0],
+                            total_horas: totalConExtras.toFixed(2),       // ✅ suma total normal + extras
+                            horas_extras: horasExtrasDecimal.toFixed(2),
+                            esMayorA0: totalConExtras > 0,
+                            esMayorOIgualA8: totalConExtras >= 8,
+                            extrasMayorA0: horasExtrasDecimal > 0
+                        };
+                    });
 
-                        this.calendarOptions.events = this.resumenHoras.map((item) => ({
-                            title: `${item.total_horas} hrs`,
-                            date: item.fecha,
-                            backgroundColor: this.getResumenColor(item),
-                            borderColor: this.getResumenColor(item)
-                        }));
+                    this.calendarOptions.events = this.resumenHoras.map((item) => ({
+                        title: `${item.total_horas} hrs`,
+                        date: item.fecha,
+                        backgroundColor: this.getResumenColor(item),
+                        borderColor: this.getResumenColor(item)
+                    }));
 
-
-                        console.log('Resumen procesado:', this.resumenHoras);
-                        resolve(); // Resolver la promesa al finalizar
-
-                    },
-                    err => {
-                        if (err.status === 404) {
-                            console.warn('No se encontraron registros para el usuario. Continuando...');
-                            this.resumenHoras = []; // Asegurarse de que el resumen esté vacío
-                            resolve(); // Resolver la promesa incluso si no hay registros
-                        } else {
-                            console.error('Error al obtener el resumen de horas:', err);
-                            reject(err); // Rechazar la promesa en caso de otros errores
-                        }
+                    console.log('Resumen procesado:', this.resumenHoras);
+                    resolve();
+                },
+                err => {
+                    if (err.status === 404) {
+                        console.warn('No se encontraron registros para el usuario.');
+                        this.resumenHoras = [];
+                        resolve();
+                    } else {
+                        console.error('Error al obtener el resumen de horas:', err);
+                        reject(err);
                     }
-                );
-            }
-        })
+                }
+            );
+        });
     }
+
+
+
+    convertirHorasADecimal(hora: string): number {
+        if (!hora || typeof hora !== 'string') return 0;
+
+        // Si ya es decimal se convierte directo
+        if (!hora.includes(':')) {
+            const decimal = parseFloat(hora);
+            return isNaN(decimal) ? 0 : decimal;
+        }
+
+        // Si es tipo HH:mm, se convierte a decimal
+        const [h, m] = hora.split(':').map(Number);
+        return h + m / 60;
+    }
+
+
 
     seleccionarMesActual() {
         this.mesSeleccionado = this.mesActual;
