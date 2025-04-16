@@ -500,13 +500,13 @@ export class HorasExtraComponent implements AfterViewInit {
     convertirHorasADecimal(hora: string): number {
         if (!hora || typeof hora !== 'string') return 0;
 
-        // Si ya es decimal (por ejemplo "9.50"), conviértelo directo
+        // Si ya es decimal se convierte directo
         if (!hora.includes(':')) {
             const decimal = parseFloat(hora);
             return isNaN(decimal) ? 0 : decimal;
         }
 
-        // Si es tipo HH:mm, conviértelo a decimal
+        // Si es tipo HH:mm, se convierte a decimal
         const [h, m] = hora.split(':').map(Number);
         return h + m / 60;
     }
