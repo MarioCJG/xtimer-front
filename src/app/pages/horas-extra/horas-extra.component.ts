@@ -30,7 +30,8 @@ import { DarkModeService } from '../../services/dark-mode.service';
     templateUrl: './horas-extra.component.html',
     styleUrls: ['./horas-extra.component.css'],
     encapsulation: ViewEncapsulation.None,
-    imports: [FullCalendarModule, FormsModule, CommonModule, FilterFechaPipe, FilterEstadoPipe]
+    // imports: [FullCalendarModule, FormsModule, CommonModule, FilterFechaPipe, FilterEstadoPipe]
+    imports: [FullCalendarModule, FormsModule, CommonModule]
 })
 export class HorasExtraComponent implements AfterViewInit {
     @ViewChild('fullCalendar') fullCalendarComponent!: FullCalendarComponent;
@@ -56,6 +57,8 @@ export class HorasExtraComponent implements AfterViewInit {
     fechaHasta: string = ''; // Fecha final seleccionada
 
     grid: { selected: boolean }[][] = [];
+    copiaGrid: { selected: boolean }[][] = []; // Copia de las filas seleccionadas del grid
+
     isDragging: boolean = false;
     selectedCells: { row: number; col: number }[] = [];
     selectedCellsFiltradas: { row: number; col: number }[] = [];
@@ -98,7 +101,7 @@ export class HorasExtraComponent implements AfterViewInit {
     proyectosFiltrados: any[] = []; // Proyectos filtrados por cliente
 
     indicesProyectosFiltrados: number[] = []; // Índices de los proyectos filtrados
-    copiaGrid: { selected: boolean }[][] = []; // Copia de las filas seleccionadas del grid
+
 
 
     constructor(public darkModeService: DarkModeService, private horasExtraService: HorasExtraService, private authService: AuthService) { }
@@ -170,6 +173,9 @@ export class HorasExtraComponent implements AfterViewInit {
         }, 100);
     }
 
+    getDiasFiltrados(): { dia: number; nombre: string }[] {
+        return this.diasSeleccionados.filter(d => d.dia !== null && d.dia !== undefined);
+    }
 
     onCalendarDateClick(arg: any): void {
         // ⚠️ Forzar la fecha como UTC para evitar desfase por zona horaria
@@ -815,6 +821,7 @@ export class HorasExtraComponent implements AfterViewInit {
         } else {
             this.proyectosFiltrados = [...this.proyectos]; // Mostrar todos los proyectos si no hay cliente seleccionado
         }
+
         console.log('Proyectos :', this.proyectos);
         console.log('Proyectos filtrados:', this.proyectosFiltrados);
 
@@ -830,14 +837,20 @@ export class HorasExtraComponent implements AfterViewInit {
         console.log('Índices de los proyectos filtrados en la lista completa de proyectos:', this.indicesProyectosFiltrados);
 
         // Crear una copia del grid con las filas seleccionadas
-        this.copiaGrid = this.indicesProyectosFiltrados.map(index => this.grid[index]);
+        this.copiaGrid = this.indicesProyectosFiltrados.map(index => {
+            const filaOriginal = this.grid[index];
+            if (!filaOriginal) return []; // Si no hay fila, devolver un array vacío
 
-        console.log('Copia de grid con las filas seleccionadas:', this.copiaGrid);
+            // Recalcular las celdas seleccionadas
+            return filaOriginal.map((celda, colIndex) => ({
+                ...celda,
+                selected: this.selectedCells.some(
+                    selectedCell => selectedCell.row === index && selectedCell.col === colIndex
+                )
+            }));
+        });
 
-        // Crear la cuadrícula con filas basadas en proyectosFiltrados y columnas basadas en horarios
-        this.grid = Array.from({ length: this.proyectosFiltrados.length }, () =>
-            Array.from({ length: this.horarios.length * 2 }, () => ({ selected: false }))
-        );
+        console.log('Copia de grid con las filas seleccionadas recalculadas:', this.copiaGrid);
     }
 
     initializeGrid() {
@@ -1088,29 +1101,49 @@ export class HorasExtraComponent implements AfterViewInit {
     }
 
     selectCell(row: number, col: number) {
-        if (this.grid[row] && this.grid[row][col]) { // Verificar que la celda exista
+        if (this.copiaGrid[row] && this.copiaGrid[row][col]) { // Verificar que la celda exista en copiaGrid
+            console.log('Estado actual de copiaGrid:', this.copiaGrid);
+            console.log('Estado actual de grid:', this.grid);
+
+            // Obtener el índice correspondiente en `grid`
+            const indexEnGrid = this.proyectos.findIndex(
+                proyecto => proyecto.id_asignacion === this.proyectosFiltrados[row]?.id_asignacion
+            );
+
+            if (indexEnGrid === -1) {
+                console.warn(`El proyecto con id_asignacion ${this.proyectosFiltrados[row]?.id_asignacion} no está en grid.`);
+                return; // Salir si el proyecto no existe en la grid original
+            }
 
             // Si la celda ya está seleccionada, deseleccionarla
-            if (this.grid[row][col].selected) {
-                this.grid[row][col].selected = false;
+            if (this.copiaGrid[row][col].selected) {
+                this.copiaGrid[row][col].selected = false;
+                this.grid[indexEnGrid][col].selected = false; // Deseleccionar en grid
                 this.selectedCells = this.selectedCells.filter(
-                    cell => !(cell.row === row && cell.col === col) // Eliminar la celda de selectedCells
+                    cell => !(cell.row === indexEnGrid && cell.col === col) // Eliminar la celda de selectedCells
                 );
-                console.log(`Celda deseleccionada: (${row}, ${col})`);
+                console.log(`Celda deseleccionada en copiaGrid: (${row}, ${col})`);
             } else {
                 // Deseleccionar cualquier celda previamente seleccionada en la misma columna
                 this.selectedCells = this.selectedCells.filter(cell => {
                     if (cell.col === col) {
-                        this.grid[cell.row][cell.col].selected = false; // Deseleccionar la celda en la grid
+                        this.grid[cell.row][cell.col].selected = false; // Deseleccionar la celda en grid
+                        const indexEnCopiaGrid = this.proyectosFiltrados.findIndex(
+                            p => p.id_asignacion === this.proyectos[cell.row]?.id_asignacion
+                        );
+                        if (indexEnCopiaGrid !== -1) {
+                            this.copiaGrid[indexEnCopiaGrid][cell.col].selected = false; // Deseleccionar en copiaGrid
+                        }
                         return false; // Eliminar la celda de selectedCells
                     }
                     return true; // Mantener las demás celdas
                 });
 
                 // Seleccionar la nueva celda
-                this.grid[row][col].selected = true;
-                this.selectedCells.push({ row, col });
-                console.log(`Celda seleccionada: (${row}, ${col})`);
+                this.copiaGrid[row][col].selected = true;
+                this.grid[indexEnGrid][col].selected = true; // Seleccionar en grid
+                this.selectedCells.push({ row: indexEnGrid, col });
+                console.log(`Celda seleccionada en copiaGrid: (${row}, ${col})`);
             }
 
             // Recalcular el total de horas del día

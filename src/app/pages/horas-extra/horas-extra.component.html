@@ -1,14 +1,8 @@
 <div class="container-fluid px-4 mt-5">
-  <div
-    class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end"
-  >
+  <div class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end">
     <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
     <label class="switch">
-      <input
-        type="checkbox"
-        [checked]="darkModeService.modoOscuro"
-        (change)="darkModeService.toggleModo()"
-      />
+      <input type="checkbox" [checked]="darkModeService.modoOscuro" (change)="darkModeService.toggleModo()" />
       <span class="slider round"></span>
     </label>
     <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
@@ -18,24 +12,16 @@
 
   <!-- Selector de Mes -->
   <div class="d-flex gap-2 mb-3">
-    <button
-      class="btn"
-      [ngClass]="{
+    <button class="btn" [ngClass]="{
         'btn-primary': mesSeleccionado === mesAnterior,
         'btn-light': mesSeleccionado !== mesAnterior
-      }"
-      (click)="seleccionarMesAnterior()"
-    >
+      }" (click)="seleccionarMesAnterior()">
       {{ mesAnterior }}
     </button>
-    <button
-      class="btn"
-      [ngClass]="{
+    <button class="btn" [ngClass]="{
         'btn-primary': mesSeleccionado === mesActual,
         'btn-light': mesSeleccionado !== mesActual
-      }"
-      (click)="seleccionarMesActual()"
-    >
+      }" (click)="seleccionarMesActual()">
       {{ mesActual }}
     </button>
   </div>
@@ -47,23 +33,16 @@
       <h5>📅 Fecha seleccionada: {{ fechaSeleccionada }}</h5>
     </div>
 
-    <div
-      class="d-flex justify-content-center gap-4 align-items-center flex-wrap"
-    >
+    <div class="d-flex justify-content-center gap-4 align-items-center flex-wrap">
       <!-- Columna izquierda: Semanas + Días -->
       <div class="d-flex flex-column gap-4">
         <!-- Botones de semanas -->
         <div class="d-flex flex-column gap-2">
           <h5>Semanas del mes:</h5>
-          <button
-            *ngFor="let semana of semanas; let i = index"
-            class="btn btn-sm"
-            [ngClass]="{
+          <button *ngFor="let semana of semanas; let i = index" class="btn btn-sm" [ngClass]="{
               'btn-primary': semanaSeleccionada === i,
               'btn-light': semanaSeleccionada !== i
-            }"
-            (click)="mostrarDiasSemana(i)"
-          >
+            }" (click)="mostrarDiasSemana(i)">
             Semana {{ i + 1 }}
           </button>
         </div>
@@ -71,15 +50,10 @@
         <!-- Botones de días -->
         <div class="d-flex flex-column gap-2">
           <h5>dias :</h5>
-          <button
-            *ngFor="let dia of diasSeleccionados"
-            class="btn btn-sm text-start"
-            [ngClass]="{
-              'btn-primary': diaSeleccionado === dia.dia,
-              'btn-light': diaSeleccionado !== dia.dia
-            }"
-            (click)="seleccionarDia(dia)"
-          >
+          <button *ngFor="let dia of getDiasFiltrados()" class="btn btn-sm text-start" [ngClass]="{
+    'btn-primary': diaSeleccionado === dia.dia,
+    'btn-light': diaSeleccionado !== dia.dia
+  }" (click)="seleccionarDia(dia)">
             {{ dia.nombre }} {{ dia.dia }}
           </button>
         </div>
@@ -87,24 +61,45 @@
 
       <!-- Calendario -->
       <div class="fc-mini">
-        <full-calendar
-          #fullCalendar
-          [options]="calendarOptions"
-          (dateClick)="onCalendarDateClick($event)"
-        >
+        <full-calendar #fullCalendar [options]="calendarOptions" (dateClick)="onCalendarDateClick($event)">
         </full-calendar>
       </div>
     </div>
   </div>
 
+  <!-- ==================== INICIO SECCIÓN 1: Registro Diario de Horas ==================== -->
+  <!-- Aquí comienza la primera tabla de registro diario de horas -->
+  <!-- ==================== FIN SECCIÓN 1: Registro Diario de Horas ==================== -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!-- ==================== INICIO SECCIÓN 2: Registro Diario de Horas ==================== -->
+  <!-- Aquí comienza la segunda tabla de registro diario de horas -->
+  <!-- ==================== FIN SECCIÓN 2: Registro Diario de Horas ==================== -->
+
+
+
+
   <!-- Cliente -->
   <div class="mb-4">
     <label class="form-label">Seleccionar Cliente:</label>
-    <select
-      class="form-select"
-      [(ngModel)]="clienteSeleccionado"
-      (change)="filtrarProyectosPorCliente()"
-    >
+    <select class="form-select" [(ngModel)]="clienteSeleccionado" (change)="filtrarProyectosPorCliente()">
       <option value="">Todos los Clientes</option>
       <option *ngFor="let cliente of clientes" [value]="cliente.nombre_cliente">
         {{ cliente.nombre_cliente }}
@@ -113,7 +108,7 @@
   </div>
 
   <!-- 📊 Nueva Tabla de Horas -->
-  <div *ngIf="fechaSeleccionada" class="mb-5">
+  <!-- <div *ngIf="fechaSeleccionada" class="mb-5">
     <h4 class="mb-3">🕒 Registro Diario de Horas</h4>
     <div class="table-responsive">
       <table class="table table-bordered text-center align-middle horas-table">
@@ -131,7 +126,7 @@
         </thead>
 
         <tbody>
-          <tr *ngFor="let proyecto of proyectosFiltrados; let rowIndex = index">
+          <tr *ngFor="let proyecto of proyectos; let rowIndex = index">
             <td class="proyecto-cell" (click)="seleccionarProyecto(proyecto)">
               {{ proyecto.nombre_proyecto }}
             </td>
@@ -154,6 +149,84 @@
             </td>
           </tr>
         </tbody>
+      </table> -->
+  <!-- 🧮 Resumen del Día -->
+  <!-- <div class="mb-3">
+        <h5>🕒 Total Horas del Día: {{ calcularTotalHorasDelDia().total }}</h5>
+        <h5 *ngIf="calcularTotalHorasDelDia().extras !== '00:00'">
+          🔥 Horas extra: {{ calcularTotalHorasDelDia().extras }}
+        </h5>
+      </div>
+
+      <div class="text-end mb-5">
+        <button class="btn btn-success" (click)="guardar()">Guardar</button>
+      </div>
+    </div>
+  </div> -->
+
+
+
+
+  <!-- ==================== INICIO SECCIÓN 1: Registro Diario de Horas ==================== -->
+  <!-- Aquí comienza la primera tabla de registro diario de horas -->
+  <!-- ==================== FIN SECCIÓN 1: Registro Diario de Horas ==================== -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!--  -->
+  <!-- ==================== INICIO SECCIÓN 2: Registro Diario de Horas ==================== -->
+  <!-- Aquí comienza la segunda tabla de registro diario de horas -->
+  <!-- ==================== FIN SECCIÓN 2: Registro Diario de Horas ==================== -->
+
+
+
+  <!-- 📊 Nueva Tabla de Horas -->
+  <div *ngIf="fechaSeleccionada" class="mb-5">
+    <h4 class="mb-3">🕒 Registro Diario de Horas</h4>
+    <div class="table-responsive">
+      <table class="table table-bordered text-center align-middle horas-table">
+        <thead class="table-light">
+          <tr>
+            <th class="proyecto-col">Proyecto</th>
+            <th *ngFor="let hora of horasAgrupadas" colspan="2" class="hora-col">
+              {{ hora }}
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let proyecto of proyectosFiltrados; let rowIndex = index">
+            <td class="proyecto-cell" (click)="seleccionarProyecto(proyecto)">
+              {{ proyecto.nombre_proyecto }}
+            </td>
+            <td *ngFor="let cell of copiaGrid[rowIndex]; let colIndex = index" class="hora-cell" [ngClass]="{
+                  selected:
+                    cell.selected &&
+                    !(colIndex === 0 || colIndex === 1 || colIndex >= 20),
+                  'highlight-yellow':
+                    cell.selected &&
+                    (colIndex === 0 || colIndex === 1 || colIndex >= 20)
+                }" (mousedown)="onMouseDown($event, rowIndex, colIndex)" (mouseover)="onMouseOver(rowIndex, colIndex)"
+              (mouseup)="onMouseUp()">
+              <small class="hora-mini">{{ calcularHorario(colIndex) }}</small>
+            </td>
+          </tr>
+        </tbody>
       </table>
       <!-- 🧮 Resumen del Día -->
       <div class="mb-3">
@@ -170,7 +243,7 @@
   </div>
 
   <!-- Horas Registradas -->
-  <h3 class="mb-4">📋 Horas Registradas</h3>
+  <!-- <h3 class="mb-4">📋 Horas Registradas</h3>
 
   <div class="row mb-3">
     <div class="col">
@@ -267,5 +340,5 @@
     <button class="btn btn-danger" (click)="exportarPDF()">
       📄 Exportar PDF
     </button>
-  </div>
+  </div> -->
 </div>
