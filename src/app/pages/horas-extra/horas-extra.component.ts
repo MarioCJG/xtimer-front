@@ -1052,6 +1052,17 @@ export class HorasExtraComponent implements AfterViewInit {
                 );
             }
         }
+
+        // 🔄 Restaurar el estado original de la cuadrícula
+        this.initializeGrid();
+
+        // 🔄 Restaurar clienteSeleccionado y proyectosFiltrados
+        this.clienteSeleccionado = ''; // Mostrar todos los clientes
+        this.proyectosFiltrados = [...this.proyectos]; // Restaurar todos los proyectos
+
+        console.log('Estado original restaurado:');
+        console.log('Cliente seleccionado:', this.clienteSeleccionado);
+        console.log('Proyectos filtrados:', this.proyectosFiltrados);
     }
 
     // Función para convertir la fecha al formato yyyy-mm-dd
