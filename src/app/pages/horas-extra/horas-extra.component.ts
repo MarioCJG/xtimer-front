@@ -104,7 +104,7 @@ export class HorasExtraComponent implements AfterViewInit {
     constructor(public darkModeService: DarkModeService, private horasExtraService: HorasExtraService, private authService: AuthService) { }
 
     async ngOnInit() {
-        // this.generarHorasAgrupadas();
+        this.generarHorasAgrupadas();
         this.generarHorarios();
         this.cargarProyectos();
         this.cargarHorasExtra();
@@ -527,6 +527,9 @@ export class HorasExtraComponent implements AfterViewInit {
         }
     }
 
+
+
+
     seleccionarMesAnterior() {
         this.mesSeleccionado = this.mesAnterior;
         console.log('Mes anterior seleccionado:', this.mesAnterior);
@@ -831,10 +834,10 @@ export class HorasExtraComponent implements AfterViewInit {
 
         console.log('Copia de grid con las filas seleccionadas:', this.copiaGrid);
 
-        // // Crear la cuadrícula con filas basadas en proyectosFiltrados y columnas basadas en horarios
-        // this.grid = Array.from({ length: this.proyectosFiltrados.length }, () =>
-        //     Array.from({ length: this.horarios.length * 2 }, () => ({ selected: false }))
-        // );
+        // Crear la cuadrícula con filas basadas en proyectosFiltrados y columnas basadas en horarios
+        this.grid = Array.from({ length: this.proyectosFiltrados.length }, () =>
+            Array.from({ length: this.horarios.length * 2 }, () => ({ selected: false }))
+        );
     }
 
     initializeGrid() {
@@ -889,13 +892,19 @@ export class HorasExtraComponent implements AfterViewInit {
         console.log('El botón Guardar fue presionado.');
         await this.eliminarHorasPorFecha(); // Llamar a la función para eliminar horas por fecha
 
+        // Verificar que id_usuario no sea null
         if (this.id_usuario === null) {
             console.error('Error: El ID del usuario no está definido.');
             return;
         }
 
+        // Calcular las horas totales y extras
         const { total, extras, totalDecimal, extrasDecimal } = this.calcularTotalHorasDelDia();
 
+        // Imprimir la información del ticket en la consola
+        console.log(`Ticket: ID Usuario: ${this.id_usuario}, Fecha: ${this.fechaSeleccionada}, Horas Totales: ${totalDecimal}, Horas Extras: ${extrasDecimal}`);
+
+        // Preparar los datos para enviar
         const resumenDatos = {
             id_usuario: this.id_usuario,
             fecha: this.convertirFechaAFormatoISO(this.fechaSeleccionada),
@@ -903,55 +912,41 @@ export class HorasExtraComponent implements AfterViewInit {
             horas_extras: extrasDecimal
         };
 
-        let idResumenHoras: number | null = null;
-
         // Verificar si ya existe un registro con el mismo id_usuario y fecha
-        await new Promise<void>((resolve, reject) => {
-            this.horasExtraService.buscarResumenHoras(this.id_usuario!, resumenDatos.fecha).subscribe(
-                res => {
-                    console.log('Registro encontrado, actualizando...', res);
+        this.horasExtraService.buscarResumenHoras(this.id_usuario, resumenDatos.fecha).subscribe(
+            res => {
+                console.log('Registro encontrado, actualizando...', res);
 
-                    this.horasExtraService.actualizarResumenHoras(resumenDatos).subscribe(
+                // Si el registro existe, hacer un PUT para actualizarlo
+                this.horasExtraService.actualizarResumenHoras(resumenDatos).subscribe(
+                    res => {
+                        console.log('Resumen de horas actualizado con éxito:', res);
+                        this.inicializarDatos();
+                    },
+                    err => {
+                        console.error('Error al actualizar el resumen de horas:', err);
+                    }
+                );
+            },
+            err => {
+                if (err.status === 404) {
+                    console.log('No se encontró un registro, creando uno nuevo...');
+
+                    // Si no existe el registro, hacer un POST para crearlo
+                    this.horasExtraService.guardarResumenHoras(resumenDatos).subscribe(
                         res => {
-                            console.log('Resumen de horas actualizado con éxito:', res);
-                            idResumenHoras = (res as { id_resumen: number }).id_resumen; // Asignar el ID del resumen actualizado
-                            resolve();
+                            console.log('Resumen de horas guardado con éxito:', res);
+                            this.inicializarDatos();
                         },
                         err => {
-                            console.error('Error al actualizar el resumen de horas:', err);
-                            reject(err);
+                            console.error('Error al guardar el resumen de horas:', err);
                         }
                     );
-                },
-                err => {
-                    if (err.status === 404) {
-                        console.log('No se encontró un registro, creando uno nuevo...');
-
-                        this.horasExtraService.guardarResumenHoras(resumenDatos).subscribe(
-                            res => {
-                                console.log('Resumen de horas guardado con éxito:', res);
-                                idResumenHoras = (res as { id_resumen: number }).id_resumen; // Asignar el ID del resumen creado
-                                resolve();
-                            },
-                            err => {
-                                console.error('Error al guardar el resumen de horas:', err);
-                                reject(err);
-                            }
-                        );
-                    } else {
-                        console.error('Error al buscar el resumen de horas:', err);
-                        reject(err);
-                    }
+                } else {
+                    console.error('Error al buscar el resumen de horas:', err);
                 }
-            );
-        });
-
-        if (!idResumenHoras) {
-            console.error('Error: No se pudo obtener el ID del resumen de horas.');
-            return;
-        }
-
-        console.log('ID del resumen de horas obtenido:', idResumenHoras);
+            }
+        );
 
         // Resto de la lógica para guardar las horas extra...
         const agrupadoPorFila: { [key: number]: number[] } = {};
@@ -992,13 +987,11 @@ export class HorasExtraComponent implements AfterViewInit {
                         const datos = {
                             id_usuario: idUsuario,
                             id_asignacion: idAsignacion,
-                            id_resumen_horas: idResumenHoras, // Asociar el ID del resumen de horas
                             fecha: fecha, // Fecha en formato yyyy-mm-dd
                             hora_inicio: horaInicio,
                             hora_fin: horaFin,
                             total_horas: totalHoras,
                         };
-                        console.log('Datos enviados al backend:', datos);
 
                         this.horasExtraService.registrarHorasExtra(datos).subscribe(
                             res => {
@@ -1023,7 +1016,6 @@ export class HorasExtraComponent implements AfterViewInit {
                 const datos = {
                     id_usuario: idUsuario,
                     id_asignacion: idAsignacion.toString(),
-                    id_resumen_horas: idResumenHoras, // Asociar el ID del resumen de horas
                     fecha: fecha, // Fecha en formato yyyy-mm-dd
                     hora_inicio: horaInicio,
                     hora_fin: horaFin,
@@ -1048,14 +1040,14 @@ export class HorasExtraComponent implements AfterViewInit {
         return `${anio}-${mes}-${dia}`;
     }
 
-    // generarHorasAgrupadas() {
-    //     const baseHora = new Date('2024-01-01T08:00:00');
-    //     for (let i = 0; i < 16; i++) {
-    //         const hora = baseHora.getHours().toString().padStart(2, '0') + ':00';
-    //         this.horasAgrupadas.push(hora);
-    //         baseHora.setHours(baseHora.getHours() + 1);
-    //     }
-    // }
+    generarHorasAgrupadas() {
+        const baseHora = new Date('2024-01-01T08:00:00');
+        for (let i = 0; i < 16; i++) {
+            const hora = baseHora.getHours().toString().padStart(2, '0') + ':00';
+            this.horasAgrupadas.push(hora);
+            baseHora.setHours(baseHora.getHours() + 1);
+        }
+    }
 
     // Función para calcular el horario basado en el índice de la columna
     calcularHorario(colIndex: number): string {
