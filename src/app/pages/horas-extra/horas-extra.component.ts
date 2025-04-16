@@ -76,7 +76,7 @@ export class HorasExtraComponent implements AfterViewInit {
 
     resumenHoras: any[] = [];
 
-    calendarOptions!: CalendarOptions; 
+    calendarOptions!: CalendarOptions;
 
 
     proyectoSeleccionadoInfo: {
@@ -148,7 +148,7 @@ export class HorasExtraComponent implements AfterViewInit {
             } else {
                 console.warn('⚠️ No se pudo acceder al calendario');
             }
-           
+
             const celdas = document.querySelectorAll('.fc-daygrid-day');
 
             celdas.forEach((celda) => {
@@ -167,28 +167,28 @@ export class HorasExtraComponent implements AfterViewInit {
         // ⚠️ Forzar la fecha como UTC para evitar desfase por zona horaria
         const partes = arg.dateStr.split('-');
         const clickedDate = new Date(Date.UTC(+partes[0], +partes[1] - 1, +partes[2]));
-    
+
         const dia = clickedDate.getUTCDate();
         const nombreDia = this.diasSemanaAbreviados[clickedDate.getUTCDay()];
-    
+
         const fechaFormateada = clickedDate.toISOString().split('T')[0]; // yyyy-MM-dd
-    
+
         const semanaIndex = this.semanas.findIndex((semana) =>
             semana.includes(dia)
         );
-    
+
         if (semanaIndex !== -1) {
             this.mostrarDiasSemana(semanaIndex);
         }
-    
+
         this.fechasMarcadas = [fechaFormateada];
         this.actualizarEventosCalendario();
-    
+
         this.seleccionarDia({ dia, nombre: nombreDia });
-    
+
         console.log('🔥 Click exacto en:', fechaFormateada);
     }
-    
+
 
 
 
@@ -209,11 +209,46 @@ export class HorasExtraComponent implements AfterViewInit {
             id: 'marcado'
         }));
 
+        // 🔴 Generar días sin resumen y anteriores a hoy
+        const hoy = new Date();
+        const anio = hoy.getFullYear();
+        const mes = this.mesSeleccionado === this.mesAnterior
+            ? (hoy.getMonth() === 0 ? 11 : hoy.getMonth() - 1)
+            : hoy.getMonth();
+
+        const anioFinal = this.mesSeleccionado === this.mesAnterior
+            ? (mes === 11 ? anio - 1 : anio)
+            : anio;
+
+        const diasDelMes = new Date(anioFinal, mes + 1, 0).getDate();
+        const eventosRojos: any[] = [];
+
+        for (let dia = 1; dia <= diasDelMes; dia++) {
+            const fecha = new Date(anioFinal, mes, dia);
+            const fechaStr = fecha.toISOString().split('T')[0];
+
+            const tieneEvento = this.resumenHoras.some(h => h.fecha === fechaStr);
+            const esPasado = fecha < hoy;
+            const esFinDeSemana = fecha.getDay() === 0 || fecha.getDay() === 6;
+
+            if (!tieneEvento && esPasado && !esFinDeSemana) {
+                eventosRojos.push({
+                    title: '',
+                    date: fechaStr,
+                    backgroundColor: '#d9534f',
+                    borderColor: '#d9534f',
+                    display: 'background'
+                });
+            }
+        }
+
         const calendarApi = this.fullCalendarComponent?.getApi();
         calendarApi?.removeAllEvents();
-        [...eventosBase, ...eventosMarcados].forEach(event => calendarApi?.addEvent(event));
-
+        [...eventosBase, ...eventosMarcados, ...eventosRojos].forEach(event =>
+            calendarApi?.addEvent(event)
+        );
     }
+
 
     getResumenColor(item: any): string {
         if (item.extrasMayorA0) return '#5bc0de'; // celeste
