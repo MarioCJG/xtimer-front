@@ -501,8 +501,6 @@ export class HorasExtraComponent implements AfterViewInit {
         });
     }
 
-
-
     convertirHorasADecimal(hora: string): number {
         if (!hora || typeof hora !== 'string') return 0;
 
@@ -516,8 +514,6 @@ export class HorasExtraComponent implements AfterViewInit {
         const [h, m] = hora.split(':').map(Number);
         return h + m / 60;
     }
-
-
 
     seleccionarMesActual() {
         this.mesSeleccionado = this.mesActual;
@@ -546,9 +542,6 @@ export class HorasExtraComponent implements AfterViewInit {
             this.seleccionarDia({ dia: diaActual, nombre: nombreDia });
         }
     }
-
-
-
 
     seleccionarMesAnterior() {
         this.mesSeleccionado = this.mesAnterior;

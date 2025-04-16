@@ -51,9 +51,9 @@
         <div class="d-flex flex-column gap-2">
           <h5>dias :</h5>
           <button *ngFor="let dia of getDiasFiltrados()" class="btn btn-sm text-start" [ngClass]="{
-    'btn-primary': diaSeleccionado === dia.dia,
-    'btn-light': diaSeleccionado !== dia.dia
-  }" (click)="seleccionarDia(dia)">
+              'btn-primary': diaSeleccionado === dia.dia,
+              'btn-light': diaSeleccionado !== dia.dia
+              }" (click)="seleccionarDia(dia)">
             {{ dia.nombre }} {{ dia.dia }}
           </button>
         </div>
