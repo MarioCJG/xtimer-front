@@ -77,7 +77,7 @@ export class HorasExtraComponent implements AfterViewInit {
     resumenHoras: any[] = [];
 
     calendarOptions!: CalendarOptions;
-
+    calendarReady = false;
 
     proyectoSeleccionadoInfo: {
         id_proyecto: number | null;
@@ -139,29 +139,37 @@ export class HorasExtraComponent implements AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        setTimeout(() => {
+        const interval = setInterval(() => {
             const calendarApi = this.fullCalendarComponent?.getApi();
-            console.log('🧩 FullCalendar API:', calendarApi);
-
             if (calendarApi) {
-                console.log('✅ El calendario se inicializó correctamente');
-            } else {
-                console.warn('⚠️ No se pudo acceder al calendario');
-            }
+                console.log('✅ FullCalendar está listo');
+                this.calendarReady = true;
 
-            const celdas = document.querySelectorAll('.fc-daygrid-day');
-
-            celdas.forEach((celda) => {
-                celda.addEventListener('click', (event: any) => {
-                    const fecha = celda.getAttribute('data-date');
-                    if (fecha) {
-                        console.log('🔥 CLIC MANUAL:', fecha);
-                        this.onCalendarDateClick({ dateStr: fecha });
-                    }
+                // Asegura que dateClick siga funcionando
+                calendarApi.on('dateClick', (arg: any) => {
+                    this.onCalendarDateClick(arg);
                 });
-            });
-        }, 0);
+
+                // Agregar eventos manuales (como los clics en las celdas del DOM)
+                const celdas = document.querySelectorAll('.fc-daygrid-day');
+                celdas.forEach((celda) => {
+                    celda.addEventListener('click', (event: any) => {
+                        const fecha = celda.getAttribute('data-date');
+                        if (fecha) {
+                            console.log('🔥 CLIC MANUAL:', fecha);
+                            this.onCalendarDateClick({ dateStr: fecha });
+                        }
+                    });
+                });
+
+                // ✅ Llama a actualizar eventos con seguridad
+                this.actualizarEventosCalendario();
+
+                clearInterval(interval);
+            }
+        }, 100);
     }
+
 
     onCalendarDateClick(arg: any): void {
         // ⚠️ Forzar la fecha como UTC para evitar desfase por zona horaria
