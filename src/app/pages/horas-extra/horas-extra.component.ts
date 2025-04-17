@@ -564,10 +564,17 @@ export class HorasExtraComponent implements AfterViewInit {
         this.fechaSeleccionada = '';
 
         const ultimoDia = new Date(anioAnterior, mes + 1, 0).getDate();
-        const nombreUltimoDia = this.diasSemanaAbreviados[
-            new Date(anioAnterior, mes, ultimoDia).getDay()
-        ];
-        this.seleccionarDia({ dia: ultimoDia, nombre: nombreUltimoDia });
+        const semanaIndex = this.semanas.findIndex(semana => semana.includes(ultimoDia));
+
+        if (semanaIndex !== -1) {
+            this.mostrarDiasSemana(semanaIndex);
+
+            const nombreUltimoDia = this.diasSemanaAbreviados[
+                new Date(anioAnterior, mes, ultimoDia).getDay()
+            ];
+
+            this.seleccionarDia({ dia: ultimoDia, nombre: nombreUltimoDia });
+        }
 
         // 🔄 Actualizar vista del calendario
         this.fullCalendarComponent?.getApi().gotoDate(new Date(anioAnterior, mes, 1));
@@ -576,26 +583,42 @@ export class HorasExtraComponent implements AfterViewInit {
 
 
     mostrarDiasSemana(indiceSemana: number) {
-        this.semanaSeleccionada = indiceSemana; // Marcar la semana seleccionada
+        this.semanaSeleccionada = indiceSemana;
         console.log(`Semana seleccionada: ${indiceSemana + 1}`);
 
+        // Obtener mes y año correctos dependiendo del mes seleccionado
         const fechaActual = new Date();
-        const anio = fechaActual.getFullYear();
-        const mes = this.mesSeleccionado === this.mesAnterior ? fechaActual.getMonth() - 1 : fechaActual.getMonth();
+        const esMesAnterior = this.mesSeleccionado === this.mesAnterior;
+        const mes = esMesAnterior
+            ? (fechaActual.getMonth() === 0 ? 11 : fechaActual.getMonth() - 1)
+            : fechaActual.getMonth();
+        const anio = esMesAnterior
+            ? (fechaActual.getMonth() === 0 ? fechaActual.getFullYear() - 1 : fechaActual.getFullYear())
+            : fechaActual.getFullYear();
 
         const diasSemana = this.semanas[indiceSemana];
-        this.diasSeleccionados = diasSemana.map((dia) => {
-            const fecha = new Date(anio, mes, dia);
-            const nombreDia = this.diasSemanaAbreviados[fecha.getDay()];
-            return { dia, nombre: nombreDia };
-        });
 
-        console.log(`Días de la semana ${indiceSemana + 1}:`, this.diasSeleccionados);
+        // ✅ FILTRAR DÍAS QUE NO PERTENECEN AL MES SELECCIONADO
+        this.diasSeleccionados = diasSemana
+            .filter((dia) => dia !== null) // elimina días vacíos
+            .map((dia) => {
+                const fecha = new Date(anio, mes, dia);
+                if (fecha.getMonth() !== mes) {
+                    return null; // elimina si pertenece a otro mes
+                }
 
-        // Reiniciar la selección de día
+                const nombreDia = this.diasSemanaAbreviados[fecha.getDay()];
+                return { dia, nombre: nombreDia };
+            })
+            .filter((dia) => dia !== null); // elimina entradas nulas tras map
+
+        console.log(`Días válidos de la semana ${indiceSemana + 1}:`, this.diasSeleccionados);
+
         this.diaSeleccionado = null;
         this.fechaSeleccionada = '';
     }
+
+
 
     seleccionarDia(dia: { dia: number; nombre: string }) {
         this.fechasMarcadas = [];
@@ -605,12 +628,16 @@ export class HorasExtraComponent implements AfterViewInit {
         console.log(`Día seleccionado: ${dia.nombre} ${dia.dia}`);
 
         // ✅ Usar el año y mes real si viene desde el calendario
-        const fechaDesdeCalendario = this.fechasMarcadas.length > 0
-            ? new Date(this.fechasMarcadas[0])
-            : new Date();
+        const fechaActual = new Date();
+        const esMesAnterior = this.mesSeleccionado === this.mesAnterior;
 
-        const anio = fechaDesdeCalendario.getFullYear();
-        const mes = fechaDesdeCalendario.getMonth();
+        const mes = esMesAnterior
+            ? (fechaActual.getMonth() === 0 ? 11 : fechaActual.getMonth() - 1)
+            : fechaActual.getMonth();
+        const anio = esMesAnterior
+            ? (fechaActual.getMonth() === 0 ? fechaActual.getFullYear() - 1 : fechaActual.getFullYear())
+            : fechaActual.getFullYear();
+
 
         const fechaFinal = new Date(anio, mes, dia.dia);
 
