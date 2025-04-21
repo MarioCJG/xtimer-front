@@ -62,7 +62,7 @@
               'btn-primary': semanaSeleccionada === i,
               'btn-light': semanaSeleccionada !== i
             }"
-            (click)="mostrarDiasSemana(i)"
+            (click)="mostrarDiasSemana(i, anioActual, mesActualIndex)"
           >
             Semana {{ i + 1 }}
           </button>
@@ -78,7 +78,7 @@
               'btn-primary': diaSeleccionado === dia.dia,
               'btn-light': diaSeleccionado !== dia.dia
             }"
-            (click)="seleccionarDia(dia)"
+            (click)="seleccionarDia(dia, anioActual, mesActualIndex)"
           >
             {{ dia.nombre }} {{ dia.dia }}
           </button>

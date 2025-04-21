@@ -34,6 +34,9 @@ import { DarkModeService } from '../../services/dark-mode.service';
 })
 export class HorasExtraComponent implements AfterViewInit {
     @ViewChild('fullCalendar') fullCalendarComponent!: FullCalendarComponent;
+    anioActual: number = new Date().getFullYear();
+    mesActualIndex: number = new Date().getMonth();
+
     fechasMarcadas: string[] = [];
     horasAgrupadas: string[] = [];
     fecha: string = '';
@@ -131,12 +134,28 @@ export class HorasExtraComponent implements AfterViewInit {
         // Seleccionar el día actual
         const diaActual = fechaActual.getDate();
         const nombreDia = this.diasSemanaAbreviados[fechaActual.getDay()]; // Obtener el nombre del día
-        this.seleccionarDia({ dia: diaActual, nombre: nombreDia });
+        this.seleccionarDia({ dia: diaActual, nombre: nombreDia }, fechaActual.getFullYear(), fechaActual.getMonth());
+
 
         this.seleccionarMesActual();
 
         this.darkModeService.aplicarModo();
     }
+
+    reconectarClicksManuales() {
+        setTimeout(() => {
+            const celdas = document.querySelectorAll('.fc-daygrid-day');
+            celdas.forEach((celda) => {
+                celda.addEventListener('click', (event: any) => {
+                    const fecha = celda.getAttribute('data-date');
+                    if (fecha) {
+                        this.onCalendarDateClick({ dateStr: fecha });
+                    }
+                });
+            });
+        }, 300);
+    }
+
 
     ngAfterViewInit(): void {
         const interval = setInterval(() => {
@@ -172,33 +191,38 @@ export class HorasExtraComponent implements AfterViewInit {
 
 
     onCalendarDateClick(arg: any): void {
-        // ⚠️ Forzar la fecha como UTC para evitar desfase por zona horaria
         const partes = arg.dateStr.split('-');
         const clickedDate = new Date(Date.UTC(+partes[0], +partes[1] - 1, +partes[2]));
 
+        const anio = clickedDate.getUTCFullYear();
+        const mes = clickedDate.getUTCMonth();
         const dia = clickedDate.getUTCDate();
         const nombreDia = this.diasSemanaAbreviados[clickedDate.getUTCDay()];
-
         const fechaFormateada = clickedDate.toISOString().split('T')[0]; // yyyy-MM-dd
 
-        const semanaIndex = this.semanas.findIndex((semana) =>
-            semana.includes(dia)
-        );
+        // ✅ Establecer el mes seleccionado segun click real!
+        this.mesSeleccionado = this.convertirMesANombre(mes);
 
+        // ✅ Recalcular semanas basadas en el nuevo mes
+        this.semanas = this.calcularSemanas(anio, mes);
+
+        // ✅ Buscar la semana del día clickeado
+        const semanaIndex = this.semanas.findIndex((semana) => semana.includes(dia));
         if (semanaIndex !== -1) {
-            this.mostrarDiasSemana(semanaIndex);
+            this.mostrarDiasSemana(semanaIndex, anio, mes); // le pasamos el año y mes real
         }
 
         this.fechasMarcadas = [fechaFormateada];
         this.actualizarEventosCalendario();
-
-        this.seleccionarDia({ dia, nombre: nombreDia });
+        this.seleccionarDia({ dia, nombre: nombreDia }, anio, mes); // también pasamos el año y mes aquí
 
         console.log('🔥 Click exacto en:', fechaFormateada);
     }
 
-
-
+    convertirMesANombre(mesIndex: number): string {
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        return meses[mesIndex];
+    }
 
     actualizarEventosCalendario() {
         const eventosBase = this.resumenHoras.map((item) => ({
@@ -342,7 +366,7 @@ export class HorasExtraComponent implements AfterViewInit {
             const [dia, mes, anio] = this.fechaSeleccionada.split('-').map(Number);
             const fecha = new Date(anio, mes - 1, dia);
             const nombreDia = this.diasSemanaAbreviados[fecha.getDay()];
-            this.seleccionarDia({ dia, nombre: nombreDia });
+            this.seleccionarDia({ dia, nombre: nombreDia }, anio, mes - 1);
         }
     }
 
@@ -442,7 +466,7 @@ export class HorasExtraComponent implements AfterViewInit {
         };
 
         // Llamar a seleccionarDia con el objeto construido
-        this.seleccionarDia(diaSeleccionado);
+        this.seleccionarDia(diaSeleccionado, anio, mes);
     }
 
     async buscarResumenHorasUsuario(): Promise<void> {
@@ -524,7 +548,7 @@ export class HorasExtraComponent implements AfterViewInit {
         this.semanas = this.calcularSemanas(anio, mes);
 
         // 🔄 Actualizar vista del calendario
-        this.fullCalendarComponent?.getApi().gotoDate(new Date(anio, mes, 1));
+        //this.fullCalendarComponent?.getApi().gotoDate(new Date(anio, mes, 1));
 
         this.semanaSeleccionada = null;
         this.diaSeleccionado = null;
@@ -535,10 +559,19 @@ export class HorasExtraComponent implements AfterViewInit {
         const diaActual = fechaActual.getDate();
         const semanaIndex = this.semanas.findIndex(sem => sem.includes(diaActual));
         if (semanaIndex !== -1) {
-            this.mostrarDiasSemana(semanaIndex);
+            this.mostrarDiasSemana(semanaIndex, anio, mes);
             const nombreDia = this.diasSemanaAbreviados[fechaActual.getDay()];
-            this.seleccionarDia({ dia: diaActual, nombre: nombreDia });
+            this.seleccionarDia({ dia: diaActual, nombre: nombreDia }, anio, mes);
+
+
         }
+
+        this.fullCalendarComponent?.getApi().gotoDate(new Date(anio, mes, 1));
+
+        const calendarApi = this.fullCalendarComponent?.getApi();
+        calendarApi?.on('dateClick', (arg: any) => this.onCalendarDateClick(arg));
+        this.reconectarClicksManuales();
+
     }
 
 
@@ -567,50 +600,41 @@ export class HorasExtraComponent implements AfterViewInit {
         const semanaIndex = this.semanas.findIndex(semana => semana.includes(ultimoDia));
 
         if (semanaIndex !== -1) {
-            this.mostrarDiasSemana(semanaIndex);
+            this.mostrarDiasSemana(semanaIndex, anioAnterior, mes);
 
             const nombreUltimoDia = this.diasSemanaAbreviados[
                 new Date(anioAnterior, mes, ultimoDia).getDay()
             ];
 
-            this.seleccionarDia({ dia: ultimoDia, nombre: nombreUltimoDia });
+            this.seleccionarDia({ dia: ultimoDia, nombre: nombreUltimoDia }, anioAnterior, mes);
         }
 
         // 🔄 Actualizar vista del calendario
         this.fullCalendarComponent?.getApi().gotoDate(new Date(anioAnterior, mes, 1));
+        const calendarApi = this.fullCalendarComponent?.getApi();
+        calendarApi?.on('dateClick', (arg: any) => this.onCalendarDateClick(arg));
+
+        this.reconectarClicksManuales();
     }
 
 
 
-    mostrarDiasSemana(indiceSemana: number) {
+    mostrarDiasSemana(indiceSemana: number, anio: number, mes: number) {
         this.semanaSeleccionada = indiceSemana;
         console.log(`Semana seleccionada: ${indiceSemana + 1}`);
 
-        // Obtener mes y año correctos dependiendo del mes seleccionado
-        const fechaActual = new Date();
-        const esMesAnterior = this.mesSeleccionado === this.mesAnterior;
-        const mes = esMesAnterior
-            ? (fechaActual.getMonth() === 0 ? 11 : fechaActual.getMonth() - 1)
-            : fechaActual.getMonth();
-        const anio = esMesAnterior
-            ? (fechaActual.getMonth() === 0 ? fechaActual.getFullYear() - 1 : fechaActual.getFullYear())
-            : fechaActual.getFullYear();
-
         const diasSemana = this.semanas[indiceSemana];
 
-        // ✅ FILTRAR DÍAS QUE NO PERTENECEN AL MES SELECCIONADO
         this.diasSeleccionados = diasSemana
-            .filter((dia) => dia !== null) // elimina días vacíos
+            .filter((dia) => dia !== null)
             .map((dia) => {
                 const fecha = new Date(anio, mes, dia);
-                if (fecha.getMonth() !== mes) {
-                    return null; // elimina si pertenece a otro mes
-                }
+                if (fecha.getMonth() !== mes) return null;
 
                 const nombreDia = this.diasSemanaAbreviados[fecha.getDay()];
                 return { dia, nombre: nombreDia };
             })
-            .filter((dia) => dia !== null); // elimina entradas nulas tras map
+            .filter((dia) => dia !== null);
 
         console.log(`Días válidos de la semana ${indiceSemana + 1}:`, this.diasSeleccionados);
 
@@ -620,46 +644,30 @@ export class HorasExtraComponent implements AfterViewInit {
 
 
 
-    seleccionarDia(dia: { dia: number; nombre: string }) {
+
+    seleccionarDia(dia: { dia: number; nombre: string }, anio: number, mes: number) {
         this.fechasMarcadas = [];
         this.actualizarEventosCalendario();
 
         this.diaSeleccionado = dia.dia;
         console.log(`Día seleccionado: ${dia.nombre} ${dia.dia}`);
 
-        // ✅ Usar el año y mes real si viene desde el calendario
-        const fechaActual = new Date();
-        const esMesAnterior = this.mesSeleccionado === this.mesAnterior;
-
-        const mes = esMesAnterior
-            ? (fechaActual.getMonth() === 0 ? 11 : fechaActual.getMonth() - 1)
-            : fechaActual.getMonth();
-        const anio = esMesAnterior
-            ? (fechaActual.getMonth() === 0 ? fechaActual.getFullYear() - 1 : fechaActual.getFullYear())
-            : fechaActual.getFullYear();
-
-
         const fechaFinal = new Date(anio, mes, dia.dia);
 
-        // Formatear la fecha seleccionada en formato dd-mm-yyyy
         const diaFormateado = fechaFinal.getDate().toString().padStart(2, '0');
         const mesFormateado = (fechaFinal.getMonth() + 1).toString().padStart(2, '0');
         const anioFormateado = fechaFinal.getFullYear();
-
         this.fechaSeleccionada = `${diaFormateado}-${mesFormateado}-${anioFormateado}`;
         console.log(`Fecha seleccionada: ${this.fechaSeleccionada}`);
 
-        this.fullCalendarComponent?.getApi().gotoDate(fechaFinal);
-
-        // 💡 Actualizar evento visual en el calendario
         const calendario = this.fullCalendarComponent?.getApi();
-        calendario.getEvents().forEach(event => {
-            if (event.id === 'seleccionado') {
-                event.remove();
-            }
+        calendario?.gotoDate(fechaFinal);
+
+        calendario?.getEvents().forEach(event => {
+            if (event.id === 'seleccionado') event.remove();
         });
 
-        calendario.addEvent({
+        calendario?.addEvent({
             id: 'seleccionado',
             title: '📌 Día seleccionado',
             start: fechaFinal,
@@ -669,7 +677,6 @@ export class HorasExtraComponent implements AfterViewInit {
             display: 'background'
         });
 
-        // Filtrar las horas correspondientes a la fecha seleccionada
         const fechaSeleccionadaISO = `${anioFormateado}-${mesFormateado}-${diaFormateado}`;
         const horasFiltradas = this.horasExtra.filter(hora => {
             const fechaHora = new Date(hora.fecha).toISOString().split('T')[0];
@@ -680,6 +687,7 @@ export class HorasExtraComponent implements AfterViewInit {
         this.selectedCells = [];
         this.transformarHorasAlGrid(horasFiltradas);
     }
+
 
 
     transformarHorasAlGrid(horasFiltradas: any[]) {
