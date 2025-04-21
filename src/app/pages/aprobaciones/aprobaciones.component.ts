@@ -2,6 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { HorasExtraService } from '../../services/horas-extra.service';
 import { CommonModule } from '@angular/common';
 import { DarkModeService } from '../../services/dark-mode.service';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
@@ -10,7 +11,7 @@ import { DarkModeService } from '../../services/dark-mode.service';
     templateUrl: './aprobaciones.component.html',
     styleUrls: ['./aprobaciones.component.css'],
     encapsulation: ViewEncapsulation.None,
-    imports: [CommonModule]
+    imports: [CommonModule, FormsModule]
 })
 export class AprobacionesComponent implements OnInit {
 
@@ -18,10 +19,20 @@ export class AprobacionesComponent implements OnInit {
     idAprobador: number = 1; // Aquí debes obtener dinámicamente el ID del usuario autenticado
 
     resumenHoras: any[] = []; // Inicializar la variable para almacenar el resumen de horas
+    horasFiltradas: any[] = []; // Inicializar la variable para almacenar el resumen de horas
 
     detallesHorasExtra: any[] = []; // Variable para almacenar los detalles de horas extra
     comentarios: any[] = []; // Variable para almacenar los detalles de horas extra
 
+    filtroCargo: string = ''; // Filtro para el cargo
+    filtroArea: string = ''; // Filtro para el área
+    filtroConsultor: string = ''; // Filtro para el nombre del consultor
+
+    opcionesCargo: string[] = []; // Opciones únicas para el filtro de cargo
+    opcionesArea: string[] = []; // Opciones únicas para el filtro de área
+    opcionesConsultor: string[] = []; // Opciones únicas para el filtro de consultores
+
+    celdaSeleccionada: number | null = null; // Variable para almacenar el ID de la celda seleccionada
 
     constructor(private horasExtraService: HorasExtraService, public darkModeService: DarkModeService) { }
 
@@ -29,14 +40,17 @@ export class AprobacionesComponent implements OnInit {
         this.cargarHorasPendientes();
 
         this.darkModeService.aplicarModo();
-
-        this.darkModeService.aplicarModo();
         this.cargarResumenHoras(); // Cargar el resumen de horas al iniciar el componente
     }
+
+
 
     imprimirId(id_resumen: number, fecha: string) {
         console.log('ID Resumen seleccionado:', id_resumen);
         console.log('Fecha seleccionada (original):', fecha);
+
+        // Actualizar la celda seleccionada
+        this.celdaSeleccionada = id_resumen;
 
         // Formatear la fecha al formato YYYY-MM-DD
         const fechaFormateada = new Date(fecha).toISOString().split('T')[0];
@@ -46,7 +60,6 @@ export class AprobacionesComponent implements OnInit {
         this.horasExtraService.obtenerHorasPorResumen(id_resumen).subscribe(
             res => {
                 console.log('Detalles de horas extra:', res);
-                // Guardar solo las columnas necesarias en detallesHorasExtra
                 this.detallesHorasExtra = res.map((detalle: any) => ({
                     proyecto_completo: detalle.proyecto_completo,
                     hora_inicio: detalle.hora_inicio,
@@ -54,16 +67,14 @@ export class AprobacionesComponent implements OnInit {
                 }));
                 console.log('Detalles de horas extra guardados:', this.detallesHorasExtra);
 
-                // Llamar a obtenerComentariosPorResumen con id_resumen y fecha formateada
                 if (fechaFormateada) {
                     this.horasExtraService.obtenerComentariosPorResumen(id_resumen, fechaFormateada).subscribe(
                         res => {
                             this.comentarios = res.map((comentario: any) => ({
-                                proyecto_nombre : comentario.proyecto_nombre,
+                                proyecto_nombre: comentario.proyecto_nombre,
                                 comentario: comentario.comentario,
                             }));
                             console.log('Comentarios obtenidos:', this.comentarios);
-                            // Aquí puedes manejar los comentarios como desees
                         },
                         err => {
                             console.error('❌ Error al obtener comentarios:', err);
@@ -82,14 +93,54 @@ export class AprobacionesComponent implements OnInit {
     cargarResumenHoras() {
         this.horasExtraService.obtenerResumenHoras().subscribe(
             res => {
-                // Filtrar las horas con horas_extras > 0 y aprobacion = 'aprobado'
-                this.resumenHoras = res.filter(hora => parseFloat(hora.horas_extras) > 0 && hora.aprobacion != 'aprobado');
-                console.log('Horas extras mayores a 0 y con aprobación "aprobado":', this.resumenHoras);
+                console.log('Datos recibidos del backend:', res);
+
+                // Filtrar las horas con horas_extras > 0 y aprobacion != 'aprobado'
+                this.resumenHoras = res.filter(hora =>
+                    !isNaN(parseFloat(hora.horas_extras)) &&
+                    parseFloat(hora.horas_extras) > 0 &&
+                    hora.aprobacion?.trim().toLowerCase() !== 'aprobado'
+                );
+
+                this.horasFiltradas = [...this.resumenHoras]; // Inicializar las horas filtradas con todos los datos
+
+                // Generar opciones únicas para los filtros
+                this.opcionesCargo = [...new Set(this.resumenHoras.map(hora => hora.cargo_nombre))];
+                this.opcionesArea = [...new Set(this.resumenHoras.map(hora => hora.area_nombre))];
+                this.opcionesConsultor = [...new Set(this.resumenHoras.map(hora => hora.consultor_nombre))];
+
+                console.log('Opciones de cargo:', this.opcionesCargo);
+                console.log('Opciones de área:', this.opcionesArea);
+                console.log('Opciones de consultores:', this.opcionesConsultor);
             },
             err => {
                 console.error('❌ Error al cargar resumen de horas:', err);
             }
         );
+    }
+
+    aplicarFiltros() {
+        // Comenzar con todos los datos cargados en resumenHoras
+        let filtradas = [...this.resumenHoras];
+
+        // Aplicar filtro por cargo si está definido
+        if (this.filtroCargo) {
+            filtradas = filtradas.filter(hora => hora.cargo_nombre === this.filtroCargo);
+        }
+
+        // Aplicar filtro por área si está definido
+        if (this.filtroArea) {
+            filtradas = filtradas.filter(hora => hora.area_nombre === this.filtroArea);
+        }
+
+        // Aplicar filtro por nombre del consultor si está definido
+        if (this.filtroConsultor) {
+            filtradas = filtradas.filter(hora => hora.consultor_nombre === this.filtroConsultor);
+        }
+
+        // Actualizar la variable horasFiltradas
+        this.horasFiltradas = filtradas;
+        console.log('Horas filtradas:', this.horasFiltradas);
     }
 
     cargarHorasPendientes() {

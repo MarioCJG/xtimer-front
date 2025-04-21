@@ -1,72 +1,88 @@
 <div class="container-fluid mt-5">
-  <div class="contenido-aprobaciones">
-    <div
-      class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end"
-    >
-      <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
-      <label class="switch">
-        <input
-          type="checkbox"
-          [checked]="darkModeService.modoOscuro"
-          (change)="darkModeService.toggleModo()"
-        />
-        <span class="slider round"></span>
-      </label>
-      <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
-    </div>
+    <div class="contenido-aprobaciones">
+        <div class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end">
+            <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
+            <label class="switch">
+                <input type="checkbox" [checked]="darkModeService.modoOscuro" (change)="darkModeService.toggleModo()" />
+                <span class="slider round"></span>
+            </label>
+            <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
+        </div>
 
-    <h2  class="titulo-centrado">Panel de Aprobaciones</h2>
-<div class="container-fluid mt-5">
-  <div class="contenido-aprobaciones">
-    <div
-      class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end"
-    >
-      <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
-      <label class="switch">
-        <input
-          type="checkbox"
-          [checked]="darkModeService.modoOscuro"
-          (change)="darkModeService.toggleModo()"
-        />
-        <span class="slider round"></span>
-      </label>
-      <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
-    </div>
+        <h2 class="titulo-centrado">Panel de Aprobaciones</h2>
+        <div class="container-fluid mt-5">
 
-    <h2  class="titulo-centrado">Panel de Aprobaciones</h2>
+            <div class="filtros d-flex gap-3 mb-3">
+                <!-- Filtro por Cargo -->
+                <div class="mb-4">
+                    <label class="form-label" for="filtroCargo">Seleccionar Cargo:</label>
+                    <select id="filtroCargo" class="form-select" [(ngModel)]="filtroCargo" (change)="aplicarFiltros()">
+                        <option value="">Todos los Cargos</option>
+                        <option *ngFor="let cargo of opcionesCargo" [value]="cargo">
+                            {{ cargo }}
+                        </option>
+                    </select>
+                </div>
 
-    <table class="table table-bordered  table-dark">
-        <thead class="table-dark">
-            <tr>
-                <th>ID Resumen</th>
-                <th>Usuario</th>
-                <th>Consultor</th>
-                <th>Fecha</th>
-                <th>Total Horas</th>
-                <th>Horas Extras</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let hora of resumenHoras">
-                <td (click)="imprimirId(hora.id_resumen, hora.fecha)" style="cursor: pointer;">
-                    {{ hora.id_resumen }}
-                </td>
-                <td>{{ hora.usuario_email }}</td>
-                <td>{{ hora.consultor_nombre }}</td>
-                <td>{{ hora.fecha | date }}</td>
-                <td>{{ hora.total_horas }}</td>
-                <td>{{ hora.horas_extras }}</td>
-                <td>{{ hora.aprobacion }}</td>
-                <td>
-                    <button class="btn btn-success btn-sm" (click)="aprobarHoraExtra(hora.id_resumen)">Aprobar</button>
-                    <button class="btn btn-danger btn-sm" (click)="rechazarHoraExtra(hora.id_resumen)">Rechazar</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-  </div>
+                <!-- Filtro por Área -->
+                <div class="mb-4">
+                    <label class="form-label" for="filtroArea">Seleccionar Área:</label>
+                    <select id="filtroArea" class="form-select" [(ngModel)]="filtroArea" (change)="aplicarFiltros()">
+                        <option value="">Todas las Áreas</option>
+                        <option *ngFor="let area of opcionesArea" [value]="area">
+                            {{ area }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Filtro por Consultor -->
+                <div class="mb-4">
+                    <label class="form-label" for="filtroConsultor">Seleccionar Consultor:</label>
+                    <select id="filtroConsultor" class="form-select" [(ngModel)]="filtroConsultor"
+                        (change)="aplicarFiltros()">
+                        <option value="">Todos los Consultores</option>
+                        <option *ngFor="let consultor of opcionesConsultor" [value]="consultor">
+                            {{ consultor }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="table table-bordered  table-dark">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID Resumen</th>
+                        <th>Consultor</th>
+                        <th>Cargo</th>
+                        <th>Área</th>
+                        <th>Fecha</th>
+                        <th>Total Horas</th>
+                        <th>Horas Extras</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let hora of resumenHoras"
+                        [ngClass]="{'celda-seleccionada': celdaSeleccionada === hora.id_resumen}">
+                        <td (click)="imprimirId(hora.id_resumen, hora.fecha)" style="cursor: pointer;">
+                            {{ hora.id_resumen }}
+                        </td>
+                        <td>{{ hora.consultor_nombre }}</td>
+                        <td>{{ hora.cargo_nombre }}</td>
+                        <td>{{ hora.area_nombre }}</td>
+                        <td>{{ hora.fecha | date: 'yyyy-MM-dd' }}</td>
+                        <td>{{ hora.total_horas }}</td>
+                        <td>{{ hora.horas_extras }}</td>
+                        <td>
+                            <button class="btn btn-success btn-sm"
+                                (click)="aprobarHoraExtra(hora.id_resumen)">Aprobar</button>
+                            <button class="btn btn-danger btn-sm"
+                                (click)="rechazarHoraExtra(hora.id_resumen)">Rechazar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <!-- Tabla para mostrar los detalles de horas extra -->
         <div *ngIf="detallesHorasExtra.length > 0" class="mt-4">
             <h3>Detalles de Horas Extra </h3>
@@ -105,4 +121,4 @@
                 </tbody>
             </table>
         </div>
-</div>
+    </div>

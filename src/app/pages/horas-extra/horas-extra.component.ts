@@ -804,12 +804,12 @@ export class HorasExtraComponent implements AfterViewInit {
 
                     // Extraer clientes únicos
                     this.clientes = [...new Map(this.proyectos.map(item => [item.nombre_cliente, item])).values()];
-                    console.log('Clientes únicos:', this.clientes);
+                    // console.log('Clientes únicos:', this.clientes);
 
                     // Inicializar los proyectos filtrados
                     this.proyectosFiltrados = [...this.proyectos];
 
-                    console.log('Proyectos asignados cargados:', this.proyectos);
+                    // console.log('Proyectos asignados cargados:', this.proyectos);
                     this.initializeGrid();
                 },
                 err => {
@@ -829,19 +829,19 @@ export class HorasExtraComponent implements AfterViewInit {
             this.proyectosFiltrados = [...this.proyectos]; // Mostrar todos los proyectos si no hay cliente seleccionado
         }
 
-        console.log('Proyectos :', this.proyectos);
-        console.log('Proyectos filtrados:', this.proyectosFiltrados);
+        // console.log('Proyectos :', this.proyectos);
+        // console.log('Proyectos filtrados:', this.proyectosFiltrados);
 
-        console.log('Cantidad de proyectos:', this.proyectosFiltrados.length);
+        // console.log('Cantidad de proyectos:', this.proyectosFiltrados.length);
 
-        console.log('Cuadrícula inicializada con proyectos filtrados:', this.grid);
+        // console.log('Cuadrícula inicializada con proyectos filtrados:', this.grid);
 
         // Obtener los índices de los proyectos filtrados en la lista completa de proyectos
         this.indicesProyectosFiltrados = this.proyectosFiltrados.map(filtrado =>
             this.proyectos.findIndex(proyecto => proyecto.id_asignacion === filtrado.id_asignacion)
         );
 
-        console.log('Índices de los proyectos filtrados en la lista completa de proyectos:', this.indicesProyectosFiltrados);
+        // console.log('Índices de los proyectos filtrados en la lista completa de proyectos:', this.indicesProyectosFiltrados);
 
         // Crear una copia del grid con las filas seleccionadas
         this.copiaGrid = this.indicesProyectosFiltrados.map(index => {
@@ -857,7 +857,7 @@ export class HorasExtraComponent implements AfterViewInit {
             }));
         });
 
-        console.log('Copia de grid con las filas seleccionadas recalculadas:', this.copiaGrid);
+        // console.log('Copia de grid con las filas seleccionadas recalculadas:', this.copiaGrid);
     }
 
     initializeGrid() {
@@ -911,7 +911,6 @@ export class HorasExtraComponent implements AfterViewInit {
     async guardar() {
         console.log('El botón Guardar fue presionado.');
         await this.eliminarHorasPorFecha(); // Llamar a la función para eliminar horas por fecha
-
         // Verificar que id_usuario no sea null
         if (this.id_usuario === null) {
             console.error('Error: El ID del usuario no está definido.');
@@ -932,41 +931,66 @@ export class HorasExtraComponent implements AfterViewInit {
             horas_extras: extrasDecimal
         };
 
-        // Verificar si ya existe un registro con el mismo id_usuario y fecha
-        this.horasExtraService.buscarResumenHoras(this.id_usuario, resumenDatos.fecha).subscribe(
-            res => {
-                console.log('Registro encontrado, actualizando...', res);
+        let idResumen: number | null = null; // Definir la variable idResumen
 
-                // Si el registro existe, hacer un PUT para actualizarlo
-                this.horasExtraService.actualizarResumenHoras(resumenDatos).subscribe(
+        // Verificar si ya existe un registro con el mismo id_usuario y fecha
+        await new Promise<void>((resolve, reject) => {
+            if (!this.id_usuario || !this.fechaSeleccionada) {
+                console.error('Error: ID de usuario o fecha no encontrados.');
+                reject('ID de usuario o fecha no encontrados.'); // Rechazar la promesa si no se encuentran los datos necesarios
+                return;
+            } else {
+                this.horasExtraService.buscarResumenHoras(this.id_usuario, resumenDatos.fecha).subscribe(
                     res => {
-                        console.log('Resumen de horas actualizado con éxito:', res);
-                        this.inicializarDatos();
+                        console.log('Registro encontrado, actualizando...', res);
+
+                        // Si el registro existe, hacer un PUT para actualizarlo
+                        this.horasExtraService.actualizarResumenHoras(resumenDatos).subscribe(
+                            (res: any) => {
+                                console.log('Resumen de horas actualizado con éxito:', res);
+
+                                // Acceder al id_resumen desde la respuesta
+                                idResumen = res.id_resumen;
+                                console.log('ID del resumen guardado:', idResumen);
+
+                                this.inicializarDatos();
+                                resolve();
+                            },
+                            err => {
+                                console.error('Error al actualizar el resumen de horas:', err);
+                                reject(err);
+                            }
+                        );
                     },
                     err => {
-                        console.error('Error al actualizar el resumen de horas:', err);
+                        if (err.status === 404) {
+                            console.log('No se encontró un registro, creando uno nuevo...');
+
+                            // Si no existe el registro, hacer un POST para crearlo
+                            this.horasExtraService.guardarResumenHoras(resumenDatos).subscribe(
+                                (res: any) => {
+                                    console.log('Resumen de horas guardado con éxito:', res);
+
+                                    // Acceder al id_resumen desde la respuesta
+                                    idResumen = res.id_resumen;
+                                    console.log('ID del resumen guardado:', idResumen);
+
+                                    this.inicializarDatos();
+                                    resolve();
+                                },
+                                err => {
+                                    console.error('Error al guardar el resumen de horas:', err);
+                                    reject(err);
+                                }
+                            );
+                        } else {
+                            console.error('Error al buscar el resumen de horas:', err);
+                            reject(err);
+                        }
                     }
                 );
-            },
-            err => {
-                if (err.status === 404) {
-                    console.log('No se encontró un registro, creando uno nuevo...');
-
-                    // Si no existe el registro, hacer un POST para crearlo
-                    this.horasExtraService.guardarResumenHoras(resumenDatos).subscribe(
-                        res => {
-                            console.log('Resumen de horas guardado con éxito:', res);
-                            this.inicializarDatos();
-                        },
-                        err => {
-                            console.error('Error al guardar el resumen de horas:', err);
-                        }
-                    );
-                } else {
-                    console.error('Error al buscar el resumen de horas:', err);
-                }
             }
-        );
+        });
 
         // Resto de la lógica para guardar las horas extra...
         const agrupadoPorFila: { [key: number]: number[] } = {};
@@ -1011,6 +1035,7 @@ export class HorasExtraComponent implements AfterViewInit {
                             hora_inicio: horaInicio,
                             hora_fin: horaFin,
                             total_horas: totalHoras,
+                            id_resumen_horas: idResumen,
                         };
 
                         this.horasExtraService.registrarHorasExtra(datos).subscribe(
@@ -1040,6 +1065,7 @@ export class HorasExtraComponent implements AfterViewInit {
                     hora_inicio: horaInicio,
                     hora_fin: horaFin,
                     total_horas: totalHoras,
+                    id_resumen_horas: idResumen,
                 };
 
                 this.horasExtraService.registrarHorasExtra(datos).subscribe(

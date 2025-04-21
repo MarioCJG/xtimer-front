@@ -161,3 +161,9 @@ body.dark-mode .table-dark th,
 body.dark-mode .table-dark td {
   color: #f0f0f0 !important;
 }
+
+.celda-seleccionada {
+    background-color: #00cf79;
+    color: white;
+    font-weight: bold; 
+}

@@ -67,35 +67,6 @@
     </div>
   </div>
 
-  <!-- ==================== INICIO SECCIÓN 1: Registro Diario de Horas ==================== -->
-  <!-- Aquí comienza la primera tabla de registro diario de horas -->
-  <!-- ==================== FIN SECCIÓN 1: Registro Diario de Horas ==================== -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!-- ==================== INICIO SECCIÓN 2: Registro Diario de Horas ==================== -->
-  <!-- Aquí comienza la segunda tabla de registro diario de horas -->
-  <!-- ==================== FIN SECCIÓN 2: Registro Diario de Horas ==================== -->
-
-
-
-
   <!-- Cliente -->
   <div class="mb-4">
     <label class="form-label">Seleccionar Cliente:</label>
@@ -106,93 +77,6 @@
       </option>
     </select>
   </div>
-
-  <!-- 📊 Nueva Tabla de Horas -->
-  <!-- <div *ngIf="fechaSeleccionada" class="mb-5">
-    <h4 class="mb-3">🕒 Registro Diario de Horas</h4>
-    <div class="table-responsive">
-      <table class="table table-bordered text-center align-middle horas-table">
-        <thead class="table-light">
-          <tr>
-            <th class="proyecto-col">Proyecto</th>
-            <th
-              *ngFor="let hora of horasAgrupadas"
-              colspan="2"
-              class="hora-col"
-            >
-              {{ hora }}
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr *ngFor="let proyecto of proyectos; let rowIndex = index">
-            <td class="proyecto-cell" (click)="seleccionarProyecto(proyecto)">
-              {{ proyecto.nombre_proyecto }}
-            </td>
-            <td
-              *ngFor="let cell of grid[rowIndex]; let colIndex = index"
-              class="hora-cell"
-              [ngClass]="{
-                selected:
-                  cell.selected &&
-                  !(colIndex === 0 || colIndex === 1 || colIndex >= 20),
-                'highlight-yellow':
-                  cell.selected &&
-                  (colIndex === 0 || colIndex === 1 || colIndex >= 20)
-              }"
-              (mousedown)="onMouseDown($event, rowIndex, colIndex)"
-              (mouseover)="onMouseOver(rowIndex, colIndex)"
-              (mouseup)="onMouseUp()"
-            >
-              <small class="hora-mini">{{ calcularHorario(colIndex) }}</small>
-            </td>
-          </tr>
-        </tbody>
-      </table> -->
-  <!-- 🧮 Resumen del Día -->
-  <!-- <div class="mb-3">
-        <h5>🕒 Total Horas del Día: {{ calcularTotalHorasDelDia().total }}</h5>
-        <h5 *ngIf="calcularTotalHorasDelDia().extras !== '00:00'">
-          🔥 Horas extra: {{ calcularTotalHorasDelDia().extras }}
-        </h5>
-      </div>
-
-      <div class="text-end mb-5">
-        <button class="btn btn-success" (click)="guardar()">Guardar</button>
-      </div>
-    </div>
-  </div> -->
-
-
-
-
-  <!-- ==================== INICIO SECCIÓN 1: Registro Diario de Horas ==================== -->
-  <!-- Aquí comienza la primera tabla de registro diario de horas -->
-  <!-- ==================== FIN SECCIÓN 1: Registro Diario de Horas ==================== -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!--  -->
-  <!-- ==================== INICIO SECCIÓN 2: Registro Diario de Horas ==================== -->
-  <!-- Aquí comienza la segunda tabla de registro diario de horas -->
-  <!-- ==================== FIN SECCIÓN 2: Registro Diario de Horas ==================== -->
-
 
 
   <!-- 📊 Nueva Tabla de Horas -->
