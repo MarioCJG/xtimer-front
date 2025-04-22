@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef } from '@angular/core';
 import { HorasExtraService } from '../../services/horas-extra.service';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
@@ -34,7 +34,7 @@ import { DarkModeService } from '../../services/dark-mode.service';
     imports: [FullCalendarModule, FormsModule, CommonModule]
 })
 export class HorasExtraComponent implements AfterViewInit {
-    @ViewChild('fullCalendar') fullCalendarComponent!: FullCalendarComponent;
+    @ViewChild('fullCalendar') fullCalendarComponent!: ElementRef<FullCalendarComponent>;
     fechasMarcadas: string[] = [];
     horasAgrupadas: string[] = [];
     fecha: string = '';
@@ -102,8 +102,6 @@ export class HorasExtraComponent implements AfterViewInit {
 
     indicesProyectosFiltrados: number[] = []; // Índices de los proyectos filtrados
 
-
-
     constructor(public darkModeService: DarkModeService, private horasExtraService: HorasExtraService, private authService: AuthService) { }
 
     async ngOnInit() {
@@ -140,36 +138,76 @@ export class HorasExtraComponent implements AfterViewInit {
 
         this.darkModeService.aplicarModo();
     }
-
-    ngAfterViewInit(): void {
-        const interval = setInterval(() => {
-            const calendarApi = this.fullCalendarComponent?.getApi();
+    private inicializarCalendario(){
+        const calendarApi = (this.fullCalendarComponent as any)?.getApi();
             if (calendarApi) {
-                console.log('✅ FullCalendar está listo');
-                this.calendarReady = true;
+            console.log('✅ FullCalendar está listo');
+            this.calendarReady = true;
+            
+            // Asegura que dateClick siga funcionando
+            calendarApi.on('dateClick', (arg: any) => {
+                this.onCalendarDateClick(arg);
+            });
 
-                // Asegura que dateClick siga funcionando
-                calendarApi.on('dateClick', (arg: any) => {
-                    this.onCalendarDateClick(arg);
+            // Agregar eventos manuales (como los clics en las celdas del DOM)
+            const celdas = document.querySelectorAll('.fc-daygrid-day');
+            celdas.forEach((celda) => {
+                celda.addEventListener('click', (event: any) => {
+                    const fecha = celda.getAttribute('data-date');
+                    if (fecha) {
+                        console.log('🔥 CLIC MANUAL:', fecha);
+                        this.onCalendarDateClick({ dateStr: fecha });
+                    }
                 });
+            });
 
-                // Agregar eventos manuales (como los clics en las celdas del DOM)
-                const celdas = document.querySelectorAll('.fc-daygrid-day');
-                celdas.forEach((celda) => {
-                    celda.addEventListener('click', (event: any) => {
-                        const fecha = celda.getAttribute('data-date');
-                        if (fecha) {
-                            console.log('🔥 CLIC MANUAL:', fecha);
-                            this.onCalendarDateClick({ dateStr: fecha });
-                        }
-                    });
-                });
+            // ✅ Llama a actualizar eventos con seguridad
+            this.actualizarEventosCalendario();
+        }
 
-                // ✅ Llama a actualizar eventos con seguridad
-                this.actualizarEventosCalendario();
+    }
+    ngAfterViewInit(): void {
+        // (this.fullCalendarComponent as ElementRef).nativeElement.addEventListener('click', (event:any) => {
+        //     const dias = event.target.closest('.fc-daygrid-day');
+        //     console.log('🔥 CLIC EN DÍA:', dias, ' del calendario');
+        //     if(dias.classList.contains('fc-daygrid-day')) {
+        //         const fecha = dias.getAttribute('data-date');
+        //         if (fecha) {
+        //             this.onCalendarDateClick({ dateStr: fecha });
+        //         }
+        //     }
+        // })
+    
+
+        const interval = setInterval(() => {
+            this.inicializarCalendario();
+            // const calendarApi = (this.fullCalendarComponent as any)?.getApi();
+            // if (calendarApi) {
+            //     console.log('✅ FullCalendar está listo');
+            //     this.calendarReady = true;
+                
+            //     // Asegura que dateClick siga funcionando
+            //     calendarApi.on('dateClick', (arg: any) => {
+            //         this.onCalendarDateClick(arg);
+            //     });
+
+            //     // Agregar eventos manuales (como los clics en las celdas del DOM)
+            //     const celdas = document.querySelectorAll('.fc-daygrid-day');
+            //     celdas.forEach((celda) => {
+            //         celda.addEventListener('click', (event: any) => {
+            //             const fecha = celda.getAttribute('data-date');
+            //             if (fecha) {
+            //                 console.log('🔥 CLIC MANUAL:', fecha);
+            //                 this.onCalendarDateClick({ dateStr: fecha });
+            //             }
+            //         });
+            //     });
+
+            //     // ✅ Llama a actualizar eventos con seguridad
+            //     this.actualizarEventosCalendario();
 
                 clearInterval(interval);
-            }
+            // }
         }, 100);
     }
 
@@ -202,8 +240,6 @@ export class HorasExtraComponent implements AfterViewInit {
 
         console.log('🔥 Click exacto en:', fechaFormateada);
     }
-
-
 
 
     actualizarEventosCalendario() {
@@ -256,7 +292,7 @@ export class HorasExtraComponent implements AfterViewInit {
             }
         }
 
-        const calendarApi = this.fullCalendarComponent?.getApi();
+        const calendarApi = (this.fullCalendarComponent as any)?.getApi();
         calendarApi?.removeAllEvents();
         [...eventosBase, ...eventosMarcados, ...eventosRojos].forEach(event =>
             calendarApi?.addEvent(event)
@@ -526,7 +562,7 @@ export class HorasExtraComponent implements AfterViewInit {
         this.semanas = this.calcularSemanas(anio, mes);
 
         // 🔄 Actualizar vista del calendario
-        this.fullCalendarComponent?.getApi().gotoDate(new Date(anio, mes, 1));
+        (this.fullCalendarComponent as any)?.getApi().gotoDate(new Date(anio, mes, 1));
 
         this.semanaSeleccionada = null;
         this.diaSeleccionado = null;
@@ -541,6 +577,7 @@ export class HorasExtraComponent implements AfterViewInit {
             const nombreDia = this.diasSemanaAbreviados[fechaActual.getDay()];
             this.seleccionarDia({ dia: diaActual, nombre: nombreDia });
         }
+        this.inicializarCalendario(); // Asegurarse de que el calendario esté inicializado
     }
 
     seleccionarMesAnterior() {
@@ -576,7 +613,11 @@ export class HorasExtraComponent implements AfterViewInit {
         }
 
         // 🔄 Actualizar vista del calendario
-        this.fullCalendarComponent?.getApi().gotoDate(new Date(anioAnterior, mes, 1));
+        (this.fullCalendarComponent as any)?.getApi().gotoDate(new Date(anioAnterior, mes, 1));
+
+        // ✅ Volver a registrar los eventos de clic en el calendario
+        this.actualizarEventosCalendario();
+        this.inicializarCalendario(); // Asegurarse de que el calendario esté inicializado
     }
 
 
@@ -648,11 +689,11 @@ export class HorasExtraComponent implements AfterViewInit {
         this.fechaSeleccionada = `${diaFormateado}-${mesFormateado}-${anioFormateado}`;
         console.log(`Fecha seleccionada: ${this.fechaSeleccionada}`);
 
-        this.fullCalendarComponent?.getApi().gotoDate(fechaFinal);
+        (this.fullCalendarComponent as any)?.getApi().gotoDate(fechaFinal);
 
         // 💡 Actualizar evento visual en el calendario
-        const calendario = this.fullCalendarComponent?.getApi();
-        calendario.getEvents().forEach(event => {
+        const calendario = (this.fullCalendarComponent as any)?.getApi();
+        calendario.getEvents().forEach((event: any) => {
             if (event.id === 'seleccionado') {
                 event.remove();
             }
@@ -935,83 +976,232 @@ export class HorasExtraComponent implements AfterViewInit {
         console.log('Celdas seleccionadas:', this.selectedCells);
     }
 
-    async guardar() {
-        console.log('El botón Guardar fue presionado.');
-        await this.eliminarHorasPorFecha(); // Llamar a la función para eliminar horas por fecha
-        // Verificar que id_usuario no sea null
-        if (this.id_usuario === null) {
-            console.error('Error: El ID del usuario no está definido.');
-            return;
-        }
+    // async guardar() {
+    //     console.log('El botón Guardar fue presionado.');
+    //     await this.eliminarHorasPorFecha(); // Llamar a la función para eliminar horas por fecha
+    //     // Verificar que id_usuario no sea null
+    //     if (this.id_usuario === null) {
+    //         console.error('Error: El ID del usuario no está definido.');
+    //         return;
+    //     }
 
-        // Calcular las horas totales y extras
-        const { total, extras, totalDecimal, extrasDecimal } = this.calcularTotalHorasDelDia();
+    //     // Calcular las horas totales y extras
+    //     const { total, extras, totalDecimal, extrasDecimal } = this.calcularTotalHorasDelDia();
 
-        // Imprimir la información del ticket en la consola
-        console.log(`Ticket: ID Usuario: ${this.id_usuario}, Fecha: ${this.fechaSeleccionada}, Horas Totales: ${totalDecimal}, Horas Extras: ${extrasDecimal}`);
+    //     // Imprimir la información del ticket en la consola
+    //     console.log(`Ticket: ID Usuario: ${this.id_usuario}, Fecha: ${this.fechaSeleccionada}, Horas Totales: ${totalDecimal}, Horas Extras: ${extrasDecimal}`);
 
-        // Preparar los datos para enviar
-        const resumenDatos = {
-            id_usuario: this.id_usuario,
-            fecha: this.convertirFechaAFormatoISO(this.fechaSeleccionada),
-            total_horas: totalDecimal,
-            horas_extras: extrasDecimal
-        };
+    //     // Preparar los datos para enviar
+    //     const resumenDatos = {
+    //         id_usuario: this.id_usuario,
+    //         fecha: this.convertirFechaAFormatoISO(this.fechaSeleccionada),
+    //         total_horas: totalDecimal,
+    //         horas_extras: extrasDecimal
+    //     };
 
-        let idResumen: number | null = null; // Definir la variable idResumen
+    //     let idResumen: number | null = null; // Definir la variable idResumen
 
-        // Verificar si ya existe un registro con el mismo id_usuario y fecha
+    //     // Verificar si ya existe un registro con el mismo id_usuario y fecha
+    //     await new Promise<void>((resolve, reject) => {
+    //         if (!this.id_usuario || !this.fechaSeleccionada) {
+    //             console.error('Error: ID de usuario o fecha no encontrados.');
+    //             reject('ID de usuario o fecha no encontrados.'); // Rechazar la promesa si no se encuentran los datos necesarios
+    //             return;
+    //         } else {
+    //             this.horasExtraService.buscarResumenHoras(this.id_usuario, resumenDatos.fecha).subscribe(
+    //                 res => {
+    //                     console.log('Registro encontrado, actualizando...', res);
+
+    //                     // Si el registro existe, hacer un PUT para actualizarlo
+    //                     this.horasExtraService.actualizarResumenHoras(resumenDatos).subscribe(
+    //                         (res: any) => {
+    //                             console.log('Resumen de horas actualizado con éxito:', res);
+
+    //                             // Acceder al id_resumen desde la respuesta
+    //                             idResumen = res.id_resumen;
+    //                             console.log('ID del resumen guardado:', idResumen);
+
+    //                             this.inicializarDatos();
+    //                             resolve();
+    //                         },
+    //                         err => {
+    //                             console.error('Error al actualizar el resumen de horas:', err);
+    //                             reject(err);
+    //                         }
+    //                     );
+    //                 },
+    //                 err => {
+    //                     if (err.status === 404) {
+    //                         console.log('No se encontró un registro, creando uno nuevo...');
+
+    //                         // Si no existe el registro, hacer un POST para crearlo
+    //                         this.horasExtraService.guardarResumenHoras(resumenDatos).subscribe(
+    //                             (res: any) => {
+    //                                 console.log('Resumen de horas guardado con éxito:', res);
+
+    //                                 // Acceder al id_resumen desde la respuesta
+    //                                 idResumen = res.id_resumen;
+    //                                 console.log('ID del resumen guardado:', idResumen);
+
+    //                                 this.inicializarDatos();
+    //                                 resolve();
+    //                             },
+    //                             err => {
+    //                                 console.error('Error al guardar el resumen de horas:', err);
+    //                                 reject(err);
+    //                             }
+    //                         );
+    //                     } else {
+    //                         console.error('Error al buscar el resumen de horas:', err);
+    //                         reject(err);
+    //                     }
+    //                 }
+    //             );
+    //         }
+    //     });
+
+    //     // Resto de la lógica para guardar las horas extra...
+    //     const agrupadoPorFila: { [key: number]: number[] } = {};
+
+    //     this.selectedCells.forEach((celda) => {
+    //         if (!agrupadoPorFila[celda.row]) {
+    //             agrupadoPorFila[celda.row] = [];
+    //         }
+    //         agrupadoPorFila[celda.row].push(celda.col);
+    //     });
+
+    //     // Ordenar las columnas dentro de cada fila
+    //     for (const fila in agrupadoPorFila) {
+    //         agrupadoPorFila[fila].sort((a, b) => a - b);
+    //     }
+
+    //     console.log('Enviando datos a la base de datos:');
+    //     for (const fila in agrupadoPorFila) {
+    //         const idUsuario = this.id_usuario || 'Usuario desconocido';
+    //         const idAsignacion = this.proyectos[parseInt(fila, 10)]?.id_asignacion || 'Asignación desconocida';
+    //         const fecha = this.convertirFechaAFormatoISO(this.fechaSeleccionada); // Convertir la fecha al formato yyyy-mm-dd
+    //         const columnas = agrupadoPorFila[fila];
+
+    //         if (columnas.length > 0) {
+    //             let inicio = columnas[0];
+    //             let fin = columnas[0];
+
+    //             for (let i = 1; i < columnas.length; i++) {
+    //                 if (columnas[i] === fin + 1) {
+    //                     // Continuar el rango
+    //                     fin = columnas[i];
+    //                 } else {
+    //                     // Finalizar el rango actual y enviar los datos
+    //                     const horaInicio = this.calcularHorario(inicio);
+    //                     const horaFin = this.calcularHorario(fin + 1); // +1 para incluir el último intervalo
+    //                     const totalHoras = this.calcularHoras(horaInicio, horaFin);
+
+    //                     const datos = {
+    //                         id_usuario: idUsuario,
+    //                         id_asignacion: idAsignacion,
+    //                         fecha: fecha, // Fecha en formato yyyy-mm-dd
+    //                         hora_inicio: horaInicio,
+    //                         hora_fin: horaFin,
+    //                         total_horas: totalHoras,
+    //                         id_resumen_horas: idResumen,
+    //                     };
+
+    //                     this.horasExtraService.registrarHorasExtra(datos).subscribe(
+    //                         res => {
+    //                             console.log('Registro exitoso:', datos);
+    //                         },
+    //                         err => {
+    //                             console.error('Error al registrar horas extra:', err);
+    //                         }
+    //                     );
+
+    //                     // Iniciar un nuevo rango
+    //                     inicio = columnas[i];
+    //                     fin = columnas[i];
+    //                 }
+    //             }
+
+    //             // Agregar el último rango y enviarlo
+    //             const horaInicio = this.calcularHorario(inicio);
+    //             const horaFin = this.calcularHorario(fin + 1); // +1 para incluir el último intervalo
+    //             const totalHoras = this.calcularHoras(horaInicio, horaFin);
+
+    //             const datos = {
+    //                 id_usuario: idUsuario,
+    //                 id_asignacion: idAsignacion.toString(),
+    //                 fecha: fecha, // Fecha en formato yyyy-mm-dd
+    //                 hora_inicio: horaInicio,
+    //                 hora_fin: horaFin,
+    //                 total_horas: totalHoras,
+    //                 id_resumen_horas: idResumen,
+    //             };
+
+    //             this.horasExtraService.registrarHorasExtra(datos).subscribe(
+    //                 res => {
+    //                     console.log('Registro exitoso:', datos);
+    //                 },
+    //                 err => {
+    //                     console.error('Error al registrar horas extra:', err);
+    //                 }
+    //             );
+    //         }
+    //     }
+
+    //     // 🔄 Restaurar el estado original de la cuadrícula
+    //     this.initializeGrid();
+
+    //     // 🔄 Restaurar clienteSeleccionado y proyectosFiltrados
+    //     this.clienteSeleccionado = ''; // Mostrar todos los clientes
+    //     this.proyectosFiltrados = [...this.proyectos]; // Restaurar todos los proyectos
+
+    //     console.log('Estado original restaurado:');
+    //     console.log('Cliente seleccionado:', this.clienteSeleccionado);
+    //     console.log('Proyectos filtrados:', this.proyectosFiltrados);
+    // }
+
+    // Función para convertir la fecha al formato yyyy-mm-dd
+
+    private async eliminarHorasPorFechaSeleccionada(): Promise<void> {
+        await this.eliminarHorasPorFecha();
+    }
+    private calcularHorasTotalesYExtras(): { totalDecimal: number; extrasDecimal: number } {
+        const { totalDecimal, extrasDecimal } = this.calcularTotalHorasDelDia();
+        console.log(`Horas totales: ${totalDecimal}, Horas extras: ${extrasDecimal}`);
+        return { totalDecimal, extrasDecimal };
+    }
+    private async verificarYGuardarResumen(resumenDatos: any): Promise<number | null> {
+        let idResumen: number | null = null;
+
         await new Promise<void>((resolve, reject) => {
-            if (!this.id_usuario || !this.fechaSeleccionada) {
+            if(!this.id_usuario || !this.fechaSeleccionada) {
                 console.error('Error: ID de usuario o fecha no encontrados.');
                 reject('ID de usuario o fecha no encontrados.'); // Rechazar la promesa si no se encuentran los datos necesarios
                 return;
-            } else {
+            }else{
                 this.horasExtraService.buscarResumenHoras(this.id_usuario, resumenDatos.fecha).subscribe(
                     res => {
                         console.log('Registro encontrado, actualizando...', res);
-
-                        // Si el registro existe, hacer un PUT para actualizarlo
                         this.horasExtraService.actualizarResumenHoras(resumenDatos).subscribe(
                             (res: any) => {
-                                console.log('Resumen de horas actualizado con éxito:', res);
-
-                                // Acceder al id_resumen desde la respuesta
+                                console.log('Resumen actualizado:', res);
                                 idResumen = res.id_resumen;
-                                console.log('ID del resumen guardado:', idResumen);
-
-                                this.inicializarDatos();
                                 resolve();
                             },
-                            err => {
-                                console.error('Error al actualizar el resumen de horas:', err);
-                                reject(err);
-                            }
+                            err => reject(err)
                         );
                     },
                     err => {
                         if (err.status === 404) {
                             console.log('No se encontró un registro, creando uno nuevo...');
-
-                            // Si no existe el registro, hacer un POST para crearlo
                             this.horasExtraService.guardarResumenHoras(resumenDatos).subscribe(
                                 (res: any) => {
-                                    console.log('Resumen de horas guardado con éxito:', res);
-
-                                    // Acceder al id_resumen desde la respuesta
+                                    console.log('Resumen guardado:', res);
                                     idResumen = res.id_resumen;
-                                    console.log('ID del resumen guardado:', idResumen);
-
-                                    this.inicializarDatos();
                                     resolve();
                                 },
-                                err => {
-                                    console.error('Error al guardar el resumen de horas:', err);
-                                    reject(err);
-                                }
+                                err => reject(err)
                             );
                         } else {
-                            console.error('Error al buscar el resumen de horas:', err);
                             reject(err);
                         }
                     }
@@ -1019,106 +1209,94 @@ export class HorasExtraComponent implements AfterViewInit {
             }
         });
 
-        // Resto de la lógica para guardar las horas extra...
+        return idResumen;
+    }
+    private registrarHorasExtra(idResumen: number | null): void {
         const agrupadoPorFila: { [key: number]: number[] } = {};
 
-        this.selectedCells.forEach((celda) => {
+        this.selectedCells.forEach(celda => {
             if (!agrupadoPorFila[celda.row]) {
                 agrupadoPorFila[celda.row] = [];
             }
             agrupadoPorFila[celda.row].push(celda.col);
         });
 
-        // Ordenar las columnas dentro de cada fila
         for (const fila in agrupadoPorFila) {
-            agrupadoPorFila[fila].sort((a, b) => a - b);
-        }
-
-        console.log('Enviando datos a la base de datos:');
-        for (const fila in agrupadoPorFila) {
-            const idUsuario = this.id_usuario || 'Usuario desconocido';
-            const idAsignacion = this.proyectos[parseInt(fila, 10)]?.id_asignacion || 'Asignación desconocida';
-            const fecha = this.convertirFechaAFormatoISO(this.fechaSeleccionada); // Convertir la fecha al formato yyyy-mm-dd
             const columnas = agrupadoPorFila[fila];
+            columnas.sort((a, b) => a - b);
 
-            if (columnas.length > 0) {
-                let inicio = columnas[0];
-                let fin = columnas[0];
+            let inicio = columnas[0];
+            let fin = columnas[0];
 
-                for (let i = 1; i < columnas.length; i++) {
-                    if (columnas[i] === fin + 1) {
-                        // Continuar el rango
-                        fin = columnas[i];
-                    } else {
-                        // Finalizar el rango actual y enviar los datos
-                        const horaInicio = this.calcularHorario(inicio);
-                        const horaFin = this.calcularHorario(fin + 1); // +1 para incluir el último intervalo
-                        const totalHoras = this.calcularHoras(horaInicio, horaFin);
-
-                        const datos = {
-                            id_usuario: idUsuario,
-                            id_asignacion: idAsignacion,
-                            fecha: fecha, // Fecha en formato yyyy-mm-dd
-                            hora_inicio: horaInicio,
-                            hora_fin: horaFin,
-                            total_horas: totalHoras,
-                            id_resumen_horas: idResumen,
-                        };
-
-                        this.horasExtraService.registrarHorasExtra(datos).subscribe(
-                            res => {
-                                console.log('Registro exitoso:', datos);
-                            },
-                            err => {
-                                console.error('Error al registrar horas extra:', err);
-                            }
-                        );
-
-                        // Iniciar un nuevo rango
-                        inicio = columnas[i];
-                        fin = columnas[i];
-                    }
+            for (let i = 1; i < columnas.length; i++) {
+                if (columnas[i] === fin + 1) {
+                    fin = columnas[i];
+                } else {
+                    this.enviarHorasExtra(fila, inicio, fin, idResumen);
+                    inicio = columnas[i];
+                    fin = columnas[i];
                 }
-
-                // Agregar el último rango y enviarlo
-                const horaInicio = this.calcularHorario(inicio);
-                const horaFin = this.calcularHorario(fin + 1); // +1 para incluir el último intervalo
-                const totalHoras = this.calcularHoras(horaInicio, horaFin);
-
-                const datos = {
-                    id_usuario: idUsuario,
-                    id_asignacion: idAsignacion.toString(),
-                    fecha: fecha, // Fecha en formato yyyy-mm-dd
-                    hora_inicio: horaInicio,
-                    hora_fin: horaFin,
-                    total_horas: totalHoras,
-                    id_resumen_horas: idResumen,
-                };
-
-                this.horasExtraService.registrarHorasExtra(datos).subscribe(
-                    res => {
-                        console.log('Registro exitoso:', datos);
-                    },
-                    err => {
-                        console.error('Error al registrar horas extra:', err);
-                    }
-                );
             }
+
+            this.enviarHorasExtra(fila, inicio, fin, idResumen);
         }
+    }
+    private enviarHorasExtra(fila: string, inicio: number, fin: number, idResumen: number | null): void {
+        const idAsignacion = this.proyectos[parseInt(fila, 10)]?.id_asignacion || 'Asignación desconocida';
+        const fecha = this.convertirFechaAFormatoISO(this.fechaSeleccionada);
+        const horaInicio = this.calcularHorario(inicio);
+        const horaFin = this.calcularHorario(fin + 1);
+        const totalHoras = this.calcularHoras(horaInicio, horaFin);
 
-        // 🔄 Restaurar el estado original de la cuadrícula
+        const datos = {
+            id_usuario: this.id_usuario,
+            id_asignacion: idAsignacion,
+            fecha,
+            hora_inicio: horaInicio,
+            hora_fin: horaFin,
+            total_horas: totalHoras,
+            id_resumen_horas: idResumen,
+        };
+
+        this.horasExtraService.registrarHorasExtra(datos).subscribe(
+            res => console.log('Registro exitoso:', datos),
+            err => console.error('Error al registrar horas extra:', err)
+        );
+    }
+    private restaurarEstadoOriginal(): void {
         this.initializeGrid();
+        this.clienteSeleccionado = '';
+        this.proyectosFiltrados = [...this.proyectos];
+        console.log('Estado original restaurado.');
+    }
+    async guardar() {
+        console.log('El botón Guardar fue presionado.');
 
-        // 🔄 Restaurar clienteSeleccionado y proyectosFiltrados
-        this.clienteSeleccionado = ''; // Mostrar todos los clientes
-        this.proyectosFiltrados = [...this.proyectos]; // Restaurar todos los proyectos
+        // 1. Eliminar horas por fecha seleccionada
+        await this.eliminarHorasPorFechaSeleccionada();
 
-        console.log('Estado original restaurado:');
-        console.log('Cliente seleccionado:', this.clienteSeleccionado);
-        console.log('Proyectos filtrados:', this.proyectosFiltrados);
+        // 2. Calcular horas totales y extras
+        const { totalDecimal, extrasDecimal } = this.calcularHorasTotalesYExtras();
+
+        // 3. Preparar datos para el resumen
+        const resumenDatos = {
+            id_usuario: this.id_usuario,
+            fecha: this.convertirFechaAFormatoISO(this.fechaSeleccionada),
+            total_horas: totalDecimal,
+            horas_extras: extrasDecimal,
+        };
+
+        // 4. Verificar y guardar resumen
+        const idResumen = await this.verificarYGuardarResumen(resumenDatos);
+
+        // 5. Registrar horas extra
+        this.registrarHorasExtra(idResumen);
+
+        // 6. Restaurar estado original
+        this.restaurarEstadoOriginal();
     }
 
-    // Función para convertir la fecha al formato yyyy-mm-dd
+
     convertirFechaAFormatoISO(fecha: string): string {
         const [dia, mes, anio] = fecha.split('-');
         return `${anio}-${mes}-${dia}`;
@@ -1223,15 +1401,16 @@ export class HorasExtraComponent implements AfterViewInit {
         }
     }
 
-    onFechaDesdeChange() {
-        console.log('Fecha Desde seleccionada:', this.fechaDesde);
-        this.verificarFechasSeleccionadas();
-    }
+    // onFechaDesdeChange() {
+    //     console.log('Fecha Desde seleccionada:', this.fechaDesde);
+    //     this.verificarFechasSeleccionadas();
+    // }
 
-    onFechaHastaChange() {
-        console.log('Fecha Hasta seleccionada:', this.fechaHasta);
-        this.verificarFechasSeleccionadas();
-    }
+    // onFechaHastaChange() {
+    //     console.log('Fecha Hasta seleccionada:', this.fechaHasta);
+    //     this.verificarFechasSeleccionadas();
+    // }
+
     verificarFechasSeleccionadas() {
         if (this.fechaDesde && this.fechaHasta) {
             console.log('Ambas fechas están seleccionadas:');
@@ -1413,47 +1592,43 @@ export class HorasExtraComponent implements AfterViewInit {
         this.horaSeleccionada!.total_horas = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
     }
 
-    cancelarEdicion() {
-        this.horaSeleccionada = null;
-    }
+    // guardarEdicion() {
+    //     if (!this.horaSeleccionada) {
+    //         console.error('No hay hora seleccionada para editar.');
+    //         return;
+    //     }
 
-    guardarEdicion() {
-        if (!this.horaSeleccionada) {
-            console.error('No hay hora seleccionada para editar.');
-            return;
-        }
+    //     // Asignar el id del usuario logueado como id_aprobador si el estado es "aprobado" o "rechazado"
+    //     if (this.horaSeleccionada.estado === 'aprobado' || this.horaSeleccionada.estado === 'rechazado') {
+    //         this.horaSeleccionada.id_aprobador = this.id_usuario; // Asignar el usuario logueado
+    //     }
 
-        // Asignar el id del usuario logueado como id_aprobador si el estado es "aprobado" o "rechazado"
-        if (this.horaSeleccionada.estado === 'aprobado' || this.horaSeleccionada.estado === 'rechazado') {
-            this.horaSeleccionada.id_aprobador = this.id_usuario; // Asignar el usuario logueado
-        }
+    //     console.log('Datos enviados para actualizar:', this.horaSeleccionada);
 
-        console.log('Datos enviados para actualizar:', this.horaSeleccionada);
+    //     this.horasExtraService.editarHorasExtra(this.horaSeleccionada).subscribe(
+    //         res => {
+    //             this.cargarHorasExtra();
+    //             this.horaSeleccionada = null;
+    //             console.log('Hora extra actualizada correctamente.');
+    //         },
+    //         err => {
+    //             console.error('Error al actualizar horas extra:', err);
+    //         }
+    //     );
+    // }
 
-        this.horasExtraService.editarHorasExtra(this.horaSeleccionada).subscribe(
-            res => {
-                this.cargarHorasExtra();
-                this.horaSeleccionada = null;
-                console.log('Hora extra actualizada correctamente.');
-            },
-            err => {
-                console.error('Error al actualizar horas extra:', err);
-            }
-        );
-    }
-
-    eliminarHoraExtra(id: number) {
-        if (confirm('¿Estás seguro de eliminar esta hora extra?')) {
-            this.horasExtraService.eliminarHorasExtra(id).subscribe(
-                res => {
-                    this.cargarHorasExtra();
-                },
-                err => {
-                    console.error('Error al eliminar horas extra:', err);
-                }
-            );
-        }
-    }
+    // eliminarHoraExtra(id: number) {
+    //     if (confirm('¿Estás seguro de eliminar esta hora extra?')) {
+    //         this.horasExtraService.eliminarHorasExtra(id).subscribe(
+    //             res => {
+    //                 this.cargarHorasExtra();
+    //             },
+    //             err => {
+    //                 console.error('Error al eliminar horas extra:', err);
+    //             }
+    //         );
+    //     }
+    // }
 
     exportarExcel() {
         if (this.horasExtra.length === 0) {
