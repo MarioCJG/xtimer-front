@@ -358,7 +358,7 @@ export class HorasExtraComponent implements AfterViewInit {
 
         await this.cargarHorasExtra();
 
-        this.buscarResumenHorasUsuario(); // Llamar a la función para buscar el resumen de horas del usuario
+        await this.buscarResumenHorasUsuario(); // Llamar a la función para buscar el resumen de horas del usuario
 
         console.log('Fecha seleccionada:', this.fechaSeleccionada);
 
@@ -368,6 +368,8 @@ export class HorasExtraComponent implements AfterViewInit {
             const nombreDia = this.diasSemanaAbreviados[fecha.getDay()];
             this.seleccionarDia({ dia, nombre: nombreDia }, anio, mes - 1);
         }
+
+        this.actualizarEventosCalendario();
     }
 
     esFechaEnResumen(dia: number | null): boolean {
@@ -940,6 +942,12 @@ export class HorasExtraComponent implements AfterViewInit {
     async guardar() {
         console.log('El botón Guardar fue presionado.');
         await this.eliminarHorasPorFecha(); // Llamar a la función para eliminar horas por fecha
+        
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 300);
+        
 
         // Verificar que id_usuario no sea null
         if (this.id_usuario === null) {
