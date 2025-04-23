@@ -375,3 +375,14 @@ body.dark-mode .seccion-titulo {
   color: #f0f0f0;
 }
 
+/* Resaltar proyectos con comentarios */
+.comentario-presente {
+  background-color: #f0f8ff; /* Color de fondo para proyectos con comentarios */
+  font-weight: bold;
+}
+
+/* Ícono de comentario */
+.comentario-icon {
+  margin-left: 8px;
+  color: #007bff; /* Color del ícono */
+}

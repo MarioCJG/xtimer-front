@@ -95,8 +95,12 @@
 
         <tbody>
           <tr *ngFor="let proyecto of proyectosFiltrados; let rowIndex = index">
-            <td class="proyecto-cell" (click)="seleccionarProyecto(proyecto)">
+            <td 
+              class="proyecto-cell" 
+              [ngClass]="{ 'comentario-presente': proyecto.tieneComentario }" 
+              (click)="seleccionarProyecto(proyecto)">
               {{ proyecto.nombre_proyecto }}
+              <span *ngIf="proyecto.tieneComentario" class="comentario-icon">💬</span>
             </td>
             <td *ngFor="let cell of copiaGrid[rowIndex]; let colIndex = index" class="hora-cell" [ngClass]="{
                   selected:

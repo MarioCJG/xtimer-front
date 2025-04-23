@@ -50,6 +50,9 @@ export class NavbarComponent implements OnInit {
     linkAdmin() {
         this.router.navigate(['/admin']);
     }
+    linkResumen() {
+        this.router.navigate(['/resumen']);
+    }
 
     actualizarUsuario() {
         this.authService.obtenerUsuario().subscribe(

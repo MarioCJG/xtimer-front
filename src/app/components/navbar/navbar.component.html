@@ -42,6 +42,14 @@
         <li class="nav-item" *ngIf="esAdmin">
           <a
             class="nav-link"
+            (click)="linkResumen()"
+            routerLink="/resumen"
+            >Resumen</a
+          >
+        </li>
+        <li class="nav-item" *ngIf="esAdmin">
+          <a
+            class="nav-link"
             (click)="linkAdmin()"
             routerLink="/admin"
             >Admin</a

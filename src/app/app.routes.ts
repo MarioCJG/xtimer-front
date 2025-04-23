@@ -4,6 +4,7 @@ import { RegistroComponent } from './pages/registro/registro.component';
 import { HorasExtraComponent } from './pages/horas-extra/horas-extra.component';
 import { AprobacionesComponent } from './pages/aprobaciones/aprobaciones.component';
 import { AdminComponent } from './pages/admin/admin.component';
+import { ResumenComponent } from './pages/resumen/resumen.component';
 import { authGuard } from './guards/auth.guard';
 import { CambioPasswordComponent } from './pages/cambio-password/cambio-password.component';
 
@@ -16,5 +17,6 @@ export const routes: Routes = [
     { path: 'horas-extra', component: HorasExtraComponent, canActivate: [authGuard] },
     { path: 'aprobaciones', component: AprobacionesComponent, canActivate: [authGuard] },
     { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
+    { path: 'resumen', component: ResumenComponent, canActivate: [authGuard] },
     { path: '**', redirectTo: '' }, //Redireccion si la ruta no existe 
 ];

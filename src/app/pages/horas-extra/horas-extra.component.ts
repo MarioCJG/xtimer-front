@@ -23,6 +23,8 @@ import { AfterViewInit } from '@angular/core';
 
 import { DarkModeService } from '../../services/dark-mode.service';
 
+import Swal from 'sweetalert2';
+
 
 @Component({
     selector: 'app-horas-extra',
@@ -132,18 +134,21 @@ export class HorasExtraComponent implements AfterViewInit {
         // Seleccionar el día actual
         const diaActual = fechaActual.getDate();
         const nombreDia = this.diasSemanaAbreviados[fechaActual.getDay()]; // Obtener el nombre del día
+        console.log("dia seleccionado:");
         this.seleccionarDia({ dia: diaActual, nombre: nombreDia });
 
         this.seleccionarMesActual();
 
         this.darkModeService.aplicarModo();
+
+        this.cargarComentarios();
     }
-    private inicializarCalendario(){
+    private inicializarCalendario() {
         const calendarApi = (this.fullCalendarComponent as any)?.getApi();
-            if (calendarApi) {
+        if (calendarApi) {
             console.log('✅ FullCalendar está listo');
             this.calendarReady = true;
-            
+
             // Asegura que dateClick siga funcionando
             calendarApi.on('dateClick', (arg: any) => {
                 this.onCalendarDateClick(arg);
@@ -157,6 +162,7 @@ export class HorasExtraComponent implements AfterViewInit {
                     if (fecha) {
                         console.log('🔥 CLIC MANUAL:', fecha);
                         this.onCalendarDateClick({ dateStr: fecha });
+                        this.cargarComentarios(); // Cargar comentarios al hacer clic en la celda
                     }
                 });
             });
@@ -177,7 +183,7 @@ export class HorasExtraComponent implements AfterViewInit {
         //         }
         //     }
         // })
-    
+
 
         const interval = setInterval(() => {
             this.inicializarCalendario();
@@ -185,7 +191,7 @@ export class HorasExtraComponent implements AfterViewInit {
             // if (calendarApi) {
             //     console.log('✅ FullCalendar está listo');
             //     this.calendarReady = true;
-                
+
             //     // Asegura que dateClick siga funcionando
             //     calendarApi.on('dateClick', (arg: any) => {
             //         this.onCalendarDateClick(arg);
@@ -206,7 +212,7 @@ export class HorasExtraComponent implements AfterViewInit {
             //     // ✅ Llama a actualizar eventos con seguridad
             //     this.actualizarEventosCalendario();
 
-                clearInterval(interval);
+            clearInterval(interval);
             // }
         }, 100);
     }
@@ -307,6 +313,52 @@ export class HorasExtraComponent implements AfterViewInit {
         return '#d9534f'; // rojo
     }
 
+    comentariosPorProyecto: { id_proyecto: number; fecha: string; mensaje: string }[] = [];
+
+    cargarComentarios() {
+        console.log("Cargando comentarios...");
+        console.log(this.horasExtra);
+
+        // Convertir la fecha seleccionada al formato yyyy-mm-dd
+        const [dia, mes, anio] = this.fechaSeleccionada.split('-');
+        const fechaISO = `${anio}-${mes}-${dia}`;
+        this.proyectoSeleccionadoInfo.fechaSeleccionada = fechaISO;
+        console.log("Fecha seleccionada:", fechaISO);
+
+        // Filtrar las horas que coincidan con la fecha seleccionada
+        const horasFiltradas = this.horasExtra.filter(hora => {
+            const fechaHora = new Date(hora.fecha).toISOString().split('T')[0]; // Convertir la fecha de hora a formato yyyy-MM-dd
+            return fechaHora === fechaISO; // Comparar con la fecha seleccionada
+        });
+
+        // Imprimir las horas filtradas
+        console.log("Horas filtradas:", horasFiltradas);
+
+        console.log(this.proyectos);
+        this.proyectos.forEach(proyecto => {
+            console.log(`Proyecto: ${proyecto.id_proyecto}`);
+            if (this.id_usuario === null) {
+                console.log("ID de usuario no encontrado, no se pueden cargar los comentarios.");
+                return;
+            } else {
+                this.horasExtraService.obtenerComentarios(proyecto.id_proyecto, fechaISO, this.id_usuario).subscribe(
+                    (comentariosPorProyecto) => {
+                        this.comentariosPorProyecto.push(...comentariosPorProyecto);
+                        console.log('Comentarios cargados:', comentariosPorProyecto);
+
+                        // Actualizar el proyecto con la información de si tiene comentarios
+                        const proyectoFiltrado = this.proyectosFiltrados.find(p => p.id_proyecto === proyecto.id_proyecto);
+                        if (proyectoFiltrado) {
+                            proyectoFiltrado.tieneComentario = comentariosPorProyecto.length > 0;
+                        }
+                    }
+                );
+            }
+        });
+        console.log(this.id_usuario);
+        console.log("Proyectos filtrados:", this.proyectosFiltrados);
+    }
+
     seleccionarProyecto(proyecto: any) {
         // Asignar los valores a la variable proyectoSeleccionadoInfo
         this.proyectoSeleccionadoInfo.id_proyecto = proyecto.id_proyecto;
@@ -356,6 +408,11 @@ export class HorasExtraComponent implements AfterViewInit {
                         }).subscribe(
                             (res) => {
                                 console.log(`Mensaje guardado para el proyecto "${proyecto.nombre_proyecto}": ${mensaje}`);
+                                // Actualizar el campo tieneComentario del proyecto
+                                const proyectoFiltrado = this.proyectosFiltrados.find(p => p.id_proyecto === proyecto.id_proyecto);
+                                if (proyectoFiltrado) {
+                                    proyectoFiltrado.tieneComentario = true; // Marcar que el proyecto tiene un comentario
+                                }
                             },
                             (err) => {
                                 console.error('Error al guardar el comentario:', err);
@@ -770,32 +827,60 @@ export class HorasExtraComponent implements AfterViewInit {
         return Math.floor(totalMinutos / 30); // Cada columna representa 30 minutos
     }
 
-    async eliminarHorasPorFecha(): Promise<void> {
+async eliminarHorasPorFecha(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        if (!this.id_usuario || !this.fechaSeleccionada) {
+            console.error('Error: No se encontró el ID del usuario o la fecha seleccionada.');
+            reject('ID de usuario o fecha no encontrados.'); // Rechazar la promesa si no se encuentran los datos necesarios
+            return;
+        }
 
-        return new Promise<void>((resolve, reject) => {
-            if (!this.id_usuario || !this.fechaSeleccionada) {
-                console.error('Error: No se encontró el ID del usuario o la fecha seleccionada.');
-                reject('ID de usuario o fecha no encontrados.'); // Rechazar la promesa si no se encuentran los datos necesarios
-                return;
-            }
-
-            if (confirm(`¿Estás seguro de eliminar todas las horas registradas para el usuario en la fecha ${this.fechaSeleccionada}?`)) {
+        // Mostrar un cuadro de diálogo amigable
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Guardar ingreso para la fecha ${this.fechaSeleccionada}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
                 const fechaISO = this.convertirFechaAFormatoISO(this.fechaSeleccionada); // Convertir la fecha al formato yyyy-mm-dd
 
-                this.horasExtraService.eliminarHorasPorUsuarioYFecha(this.id_usuario, fechaISO).subscribe(
+                if(this.id_usuario === null){
+                    return;
+                }else{
+                    this.horasExtraService.eliminarHorasPorUsuarioYFecha(this.id_usuario, fechaISO).subscribe(
                     res => {
                         console.log('Horas eliminadas correctamente:', res);
                         this.cargarHorasExtra(); // Recargar las horas extra después de la eliminación
+                        Swal.fire(
+                            'Eliminado',
+                            'Las horas registradas han sido eliminadas correctamente.',
+                            'success'
+                        );
                         resolve(); // Resolver la promesa al finalizar
                     },
                     err => {
                         console.error('Error al eliminar las horas:', err);
+                        Swal.fire(
+                            'Error',
+                            'Ocurrió un error al intentar eliminar las horas registradas.',
+                            'error'
+                        );
                         reject(err); // Rechazar la promesa en caso de error
                     }
                 );
+                }
+            } else {
+                console.log('Eliminación cancelada por el usuario.');
+                reject('Eliminación cancelada por el usuario.');
             }
         });
-    }
+    });
+}
 
     calcularMeses() {
         const fechaActual = new Date();
@@ -1164,20 +1249,22 @@ export class HorasExtraComponent implements AfterViewInit {
     private async eliminarHorasPorFechaSeleccionada(): Promise<void> {
         await this.eliminarHorasPorFecha();
     }
+
     private calcularHorasTotalesYExtras(): { totalDecimal: number; extrasDecimal: number } {
         const { totalDecimal, extrasDecimal } = this.calcularTotalHorasDelDia();
         console.log(`Horas totales: ${totalDecimal}, Horas extras: ${extrasDecimal}`);
         return { totalDecimal, extrasDecimal };
     }
+
     private async verificarYGuardarResumen(resumenDatos: any): Promise<number | null> {
         let idResumen: number | null = null;
 
         await new Promise<void>((resolve, reject) => {
-            if(!this.id_usuario || !this.fechaSeleccionada) {
+            if (!this.id_usuario || !this.fechaSeleccionada) {
                 console.error('Error: ID de usuario o fecha no encontrados.');
                 reject('ID de usuario o fecha no encontrados.'); // Rechazar la promesa si no se encuentran los datos necesarios
                 return;
-            }else{
+            } else {
                 this.horasExtraService.buscarResumenHoras(this.id_usuario, resumenDatos.fecha).subscribe(
                     res => {
                         console.log('Registro encontrado, actualizando...', res);
@@ -1264,7 +1351,7 @@ export class HorasExtraComponent implements AfterViewInit {
         );
     }
     private restaurarEstadoOriginal(): void {
-        this.initializeGrid();
+        // this.initializeGrid();
         this.clienteSeleccionado = '';
         this.proyectosFiltrados = [...this.proyectos];
         console.log('Estado original restaurado.');
@@ -1292,8 +1379,7 @@ export class HorasExtraComponent implements AfterViewInit {
         // 5. Registrar horas extra
         this.registrarHorasExtra(idResumen);
 
-        // 6. Restaurar estado original
-        this.restaurarEstadoOriginal();
+        window.location.reload();
     }
 
 

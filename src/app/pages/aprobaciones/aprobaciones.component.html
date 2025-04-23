@@ -62,7 +62,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let hora of resumenHoras"
+                    <tr *ngFor="let hora of horasFiltradas"
                         [ngClass]="{'celda-seleccionada': celdaSeleccionada === hora.id_resumen}">
                         <td (click)="imprimirId(hora.id_resumen, hora.fecha)" style="cursor: pointer;">
                             {{ hora.id_resumen }}
