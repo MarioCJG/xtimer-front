@@ -106,7 +106,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarCargos() {
-    this.http.get<any[]>('http://localhost:3000/api/cargos').subscribe(
+    this.http.get<any[]>('/api/cargos').subscribe(
       res => {
         this.cargos = res;
         console.log('Cargos cargados:', this.cargos); // Verificar los datos de cargos
@@ -118,7 +118,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarRoles() {
-    this.http.get<any[]>('http://localhost:3000/api/roles').subscribe(
+    this.http.get<any[]>('/api/roles').subscribe(
       res => {
         this.roles = res;
         console.log('Roles cargados:', this.roles); // Verificar los datos de roles
@@ -130,7 +130,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarAreas() {
-    this.http.get<any[]>('http://localhost:3000/api/areas').subscribe(
+    this.http.get<any[]>('/api/areas').subscribe(
       res => {
         this.areas = res;
         console.log('Áreas cargadas:', this.areas); // Verificar los datos de áreas
@@ -142,7 +142,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarClientes() {
-    this.http.get<any[]>('http://localhost:3000/api/clientes').subscribe(
+    this.http.get<any[]>('/api/clientes').subscribe(
       res => {
         this.clientes = res;
       },
@@ -153,7 +153,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarConsultores() {
-    this.http.get<any[]>('http://localhost:3000/api/consultores').subscribe(
+    this.http.get<any[]>('/api/consultores').subscribe(
       res => {
         this.consultores = res;
       },
@@ -164,7 +164,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarProyectos() {
-    this.http.get<any[]>('http://localhost:3000/api/proyectos').subscribe(
+    this.http.get<any[]>('/api/proyectos').subscribe(
       res => {
         this.proyectos = res;
       },
@@ -178,7 +178,7 @@ export class AdminComponent implements OnInit {
     if (!this.idProyectoSeleccionado) return;
 
     this.http
-      .get<any[]>(`http://localhost:3000/api/proyectos-asignados/${this.idProyectoSeleccionado}`)
+      .get<any[]>(`/api/proyectos-asignados/${this.idProyectoSeleccionado}`)
       .subscribe(
         res => {
           // Actualizar la lista de consultores asignados con sus valores por hora
@@ -240,7 +240,7 @@ guardarAsignaciones(asignaciones: any) {
   }
 
   // Enviar la lista de asignaciones al backend
-  this.http.post('http://localhost:3000/api/proyectos-asignados/actualizar', asignacionesConValorHora).subscribe(
+  this.http.post('/api/proyectos-asignados/actualizar', asignacionesConValorHora).subscribe(
     res => {
       console.log('Asignaciones actualizadas con éxito:', res);
       this.mensajeAsignacion = 'Asignaciones guardadas correctamente.';
@@ -265,7 +265,7 @@ crearCliente() {
     telefono: this.telefonoCliente
   };
 
-  this.http.post('http://localhost:3000/api/clientes', nuevoCliente).subscribe(
+  this.http.post('/api/clientes', nuevoCliente).subscribe(
     res => {
       this.mensaje = 'Cliente creado con éxito.';
       this.limpiarFormulario(); // Limpiar los campos
@@ -293,7 +293,7 @@ crearArea() {
 
   const nuevaArea = { nombre: this.nombreArea };
 
-  this.http.post('http://localhost:3000/api/areas', nuevaArea).subscribe(
+  this.http.post('/api/areas', nuevaArea).subscribe(
     res => {
       this.mensajeArea = 'Área creada con éxito.';
       this.limpiarFormularioArea();
@@ -318,7 +318,7 @@ crearCargo() {
 
   const nuevaArea = { nombre: this.nombreCargo };
 
-  this.http.post('http://localhost:3000/api/cargos', nuevaArea).subscribe(
+  this.http.post('/api/cargos', nuevaArea).subscribe(
     res => {
       this.mensajeCargo = 'Área creada con éxito.';
       this.limpiarFormularioArea();
@@ -355,7 +355,7 @@ crearProyecto() {
     id_cliente: this.idClienteSeleccionado
   };
 
-  this.http.post('http://localhost:3000/api/proyectos', nuevoProyecto).subscribe(
+  this.http.post('/api/proyectos', nuevoProyecto).subscribe(
     (res: any) => {
       const idProyecto = res.id; // ID del proyecto recién creado
       this.asignarConsultores(idProyecto);
@@ -378,7 +378,7 @@ asignarConsultores(idProyecto: number) {
 
   console.log('Datos enviados al backend para asignar consultores:', asignaciones);
 
-  this.http.post('http://localhost:3000/api/proyectos-asignados', asignaciones).subscribe(
+  this.http.post('/api/proyectos-asignados', asignaciones).subscribe(
     res => {
       this.mensajeProyecto = 'Proyecto creado y consultores asignados con éxito.';
       this.limpiarFormularioProyecto();
@@ -415,7 +415,7 @@ crearUsuario() {
   const contraseñaGenerada = this.generarContraseña();
 
   // Enviar datos al backend
-  this.http.post('http://localhost:3000/api/usuarios', { email: this.emailUsuario, password: contraseñaGenerada }).subscribe(
+  this.http.post('/api/usuarios', { email: this.emailUsuario, password: contraseñaGenerada }).subscribe(
     res => {
       this.mensajeUsuario = `Usuario creado con éxito. Contraseña generada: ${contraseñaGenerada}`;
       this.emailUsuario = ''; // Limpiar el campo
@@ -454,7 +454,7 @@ crearUsuarioYConsultor() {
   });
 
   // Enviar datos al backend
-  this.http.post('http://localhost:3000/api/usuarios-consultores', {
+  this.http.post('/api/usuarios-consultores', {
     email: this.emailUsuario,
     password: contraseñaGenerada,
     nombre: this.nombreConsultor,

@@ -10,6 +10,17 @@ import { UsuariosService } from './usuarios.service';
 export class AuthService {
     private apiUrl = 'http://localhost:3000/api/auth';
 
+    private ingreso: boolean = false;
+
+    primerRefresh(): boolean {
+        if (this.ingreso == false) {
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>Ingreso correcto');
+            this.ingreso = true;
+            return this.ingreso;
+        }
+        return false; // Default return value
+    }
+
     constructor(private http: HttpClient, private usuariosService: UsuariosService) { }
 
     login(credentials: any): Observable<any> {
@@ -78,7 +89,7 @@ export class AuthService {
     }
 
     cambiarPassword(data: { id_usuario: number; nuevaPassword: string }) {
-        return this.http.post('http://localhost:3000/api/auth/cambiar-password', data);
+        return this.http.post('/api/auth/cambiar-password', data);
     }
 
 }

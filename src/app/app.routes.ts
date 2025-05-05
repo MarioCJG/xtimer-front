@@ -18,5 +18,5 @@ export const routes: Routes = [
     { path: 'aprobaciones', component: AprobacionesComponent, canActivate: [authGuard] },
     { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
     { path: 'resumen', component: ResumenComponent, canActivate: [authGuard] },
-    { path: '**', redirectTo: '' }, //Redireccion si la ruta no existe 
+    { path: '**', redirectTo: '', pathMatch: 'full'  }, //Redireccion si la ruta no existe 
 ];

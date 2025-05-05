@@ -104,9 +104,11 @@ export class HorasExtraComponent implements AfterViewInit {
 
     indicesProyectosFiltrados: number[] = []; // Índices de los proyectos filtrados
 
+
     constructor(public darkModeService: DarkModeService, private horasExtraService: HorasExtraService, private authService: AuthService) { }
 
     async ngOnInit() {
+    
         this.generarHorasAgrupadas();
         this.generarHorarios();
         this.cargarProyectos();
@@ -142,6 +144,11 @@ export class HorasExtraComponent implements AfterViewInit {
         this.darkModeService.aplicarModo();
 
         this.cargarComentarios();
+
+        if (await this.authService.primerRefresh() == false) {
+            console.log("refresh")
+            window.location.reload();
+        }
     }
     private inicializarCalendario() {
         const calendarApi = (this.fullCalendarComponent as any)?.getApi();
@@ -827,60 +834,35 @@ export class HorasExtraComponent implements AfterViewInit {
         return Math.floor(totalMinutos / 30); // Cada columna representa 30 minutos
     }
 
-async eliminarHorasPorFecha(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-        if (!this.id_usuario || !this.fechaSeleccionada) {
-            console.error('Error: No se encontró el ID del usuario o la fecha seleccionada.');
-            reject('ID de usuario o fecha no encontrados.'); // Rechazar la promesa si no se encuentran los datos necesarios
-            return;
-        }
+    async eliminarHorasPorFecha(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (!this.id_usuario || !this.fechaSeleccionada) {
+                console.error('Error: No se encontró el ID del usuario o la fecha seleccionada.');
+                reject('ID de usuario o fecha no encontrados.'); // Rechazar la promesa si no se encuentran los datos necesarios
+                return;
+            }
 
-        // Mostrar un cuadro de diálogo amigable
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: `Guardar ingreso para la fecha ${this.fechaSeleccionada}`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, guardar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const fechaISO = this.convertirFechaAFormatoISO(this.fechaSeleccionada); // Convertir la fecha al formato yyyy-mm-dd
+            const fechaISO = this.convertirFechaAFormatoISO(this.fechaSeleccionada); // Convertir la fecha al formato yyyy-mm-dd
 
-                if(this.id_usuario === null){
-                    return;
-                }else{
-                    this.horasExtraService.eliminarHorasPorUsuarioYFecha(this.id_usuario, fechaISO).subscribe(
+            if (this.id_usuario === null) {
+                return;
+            } else {
+                this.horasExtraService.eliminarHorasPorUsuarioYFecha(this.id_usuario, fechaISO).subscribe(
                     res => {
                         console.log('Horas eliminadas correctamente:', res);
                         this.cargarHorasExtra(); // Recargar las horas extra después de la eliminación
-                        Swal.fire(
-                            'Eliminado',
-                            'Las horas registradas han sido eliminadas correctamente.',
-                            'success'
-                        );
+
                         resolve(); // Resolver la promesa al finalizar
                     },
                     err => {
                         console.error('Error al eliminar las horas:', err);
-                        Swal.fire(
-                            'Error',
-                            'Ocurrió un error al intentar eliminar las horas registradas.',
-                            'error'
-                        );
                         reject(err); // Rechazar la promesa en caso de error
                     }
                 );
-                }
-            } else {
-                console.log('Eliminación cancelada por el usuario.');
-                reject('Eliminación cancelada por el usuario.');
             }
+
         });
-    });
-}
+    }
 
     calcularMeses() {
         const fechaActual = new Date();
@@ -1298,37 +1280,144 @@ async eliminarHorasPorFecha(): Promise<void> {
 
         return idResumen;
     }
-    private registrarHorasExtra(idResumen: number | null): void {
-        const agrupadoPorFila: { [key: number]: number[] } = {};
 
-        this.selectedCells.forEach(celda => {
-            if (!agrupadoPorFila[celda.row]) {
-                agrupadoPorFila[celda.row] = [];
-            }
-            agrupadoPorFila[celda.row].push(celda.col);
-        });
+private registrarHorasExtra(idResumen: number | null): void {
+    console.log('Iniciando registro de horas extra...');
+    const agrupadoPorFila = this.agruparCeldasPorFila();
+    const resumenRangos = this.procesarCeldasAgrupadas(agrupadoPorFila);
+    const rangosClasificados = this.clasificarRangos(resumenRangos);
 
-        for (const fila in agrupadoPorFila) {
-            const columnas = agrupadoPorFila[fila];
-            columnas.sort((a, b) => a - b);
+    // Imprimir los rangos clasificados
+    console.log('Resumen de rangos a ingresar:');
+    rangosClasificados.forEach(rango => {
+        console.log(`Fila: ${rango.fila}, Inicio: ${rango.inicio}, Fin: ${rango.fin}, Tipo: ${rango.tipo}`);
+    });
 
-            let inicio = columnas[0];
-            let fin = columnas[0];
+    // Enviar los rangos clasificados
+    this.enviarRangosClasificados(rangosClasificados, idResumen);
+}
 
-            for (let i = 1; i < columnas.length; i++) {
-                if (columnas[i] === fin + 1) {
-                    fin = columnas[i];
-                } else {
-                    this.enviarHorasExtra(fila, inicio, fin, idResumen);
-                    inicio = columnas[i];
-                    fin = columnas[i];
-                }
-            }
-
-            this.enviarHorasExtra(fila, inicio, fin, idResumen);
+private agruparCeldasPorFila(): { [key: number]: number[] } {
+    const agrupadoPorFila: { [key: number]: number[] } = {};
+    this.selectedCells.forEach(celda => {
+        if (!agrupadoPorFila[celda.row]) {
+            agrupadoPorFila[celda.row] = [];
         }
+        agrupadoPorFila[celda.row].push(celda.col);
+    });
+    console.log('Celdas agrupadas por fila:', agrupadoPorFila);
+    return agrupadoPorFila;
+}
+
+private procesarCeldasAgrupadas(agrupadoPorFila: { [key: number]: number[] }): { fila: string; inicio: string; fin: string }[] {
+    const resumenRangos: { fila: string; inicio: string; fin: string }[] = [];
+    let menorInicio: number | null = null;
+    let mayorFin: number | null = null;
+
+    for (const fila in agrupadoPorFila) {
+        const columnas = agrupadoPorFila[fila];
+        columnas.sort((a, b) => a - b);
+        console.log(`Procesando fila ${fila} con columnas ordenadas:`, columnas);
+
+        let inicio = columnas[0];
+        let fin = columnas[0];
+
+        for (let i = 1; i < columnas.length; i++) {
+            if (columnas[i] === fin + 1) {
+                fin = columnas[i];
+            } else {
+                this.agregarRangoAlResumen(resumenRangos, fila, inicio, fin);
+                menorInicio = menorInicio === null ? inicio : Math.min(menorInicio, inicio);
+                mayorFin = mayorFin === null ? fin : Math.max(mayorFin, fin);
+                inicio = columnas[i];
+                fin = columnas[i];
+            }
+        }
+
+        this.agregarRangoAlResumen(resumenRangos, fila, inicio, fin);
+        menorInicio = menorInicio === null ? inicio : Math.min(menorInicio, inicio);
+        mayorFin = mayorFin === null ? fin : Math.max(mayorFin, fin);
     }
-    private enviarHorasExtra(fila: string, inicio: number, fin: number, idResumen: number | null): void {
+
+    console.log('Resumen de rangos a ingresar:', resumenRangos);
+    return resumenRangos;
+}
+
+private agregarRangoAlResumen(resumenRangos: { fila: string; inicio: string; fin: string }[], fila: string, inicio: number, fin: number): void {
+    resumenRangos.push({
+        fila,
+        inicio: this.calcularHorario(inicio),
+        fin: this.calcularHorario(fin + 1) // +1 para incluir el último intervalo
+    });
+}
+
+private clasificarRangos(resumenRangos: { fila: string; inicio: string; fin: string }[]): { fila: string; inicio: string; fin: string; tipo: string }[] {
+    let horasNormalesAcumuladas = 0; // Acumulador de horas normales en minutos
+    return resumenRangos
+        .sort((a, b) => this.ordenarPorHora(a, b))
+        .map(rango => {
+            const [inicioHoras, inicioMinutos] = rango.inicio.split(':').map(Number);
+            const [finHoras, finMinutos] = rango.fin.split(':').map(Number);
+
+            const inicioEnMinutos = inicioHoras * 60 + inicioMinutos;
+            const finEnMinutos = finHoras * 60 + finMinutos;
+            const duracionEnMinutos = finEnMinutos - inicioEnMinutos;
+
+            if (horasNormalesAcumuladas < 480) { // 480 minutos = 8 horas
+                const minutosRestantesNormales = 480 - horasNormalesAcumuladas;
+
+                if (duracionEnMinutos <= minutosRestantesNormales) {
+                    horasNormalesAcumuladas += duracionEnMinutos;
+                    return { ...rango, tipo: 'normal' };
+                } else {
+                    const finNormal = inicioEnMinutos + minutosRestantesNormales;
+                    const finNormalHoras = Math.floor(finNormal / 60).toString().padStart(2, '0');
+                    const finNormalMinutos = (finNormal % 60).toString().padStart(2, '0');
+
+                    horasNormalesAcumuladas = 480; // Alcanzamos el límite de horas normales
+
+                    return [
+                        { fila: rango.fila, inicio: rango.inicio, fin: `${finNormalHoras}:${finNormalMinutos}`, tipo: 'normal' },
+                        { fila: rango.fila, inicio: `${finNormalHoras}:${finNormalMinutos}`, fin: rango.fin, tipo: 'extra' }
+                    ];
+                }
+            } else {
+                return { ...rango, tipo: 'extra' };
+            }
+        })
+        .flat(); // Aplanar el arreglo en caso de que se dividan rangos
+}
+
+private ordenarPorHora(a: { inicio: string; fin: string }, b: { inicio: string; fin: string }): number {
+    const horaInicioA = a.inicio.split(':').map(Number);
+    const horaInicioB = b.inicio.split(':').map(Number);
+    const diferenciaInicio = horaInicioA[0] - horaInicioB[0] || horaInicioA[1] - horaInicioB[1];
+
+    if (diferenciaInicio !== 0) {
+        return diferenciaInicio; // Ordenar por hora de inicio
+    }
+
+    const horaFinA = a.fin.split(':').map(Number);
+    const horaFinB = b.fin.split(':').map(Number);
+    return horaFinA[0] - horaFinB[0] || horaFinA[1] - horaFinB[1]; // Ordenar por hora de fin si las horas de inicio son iguales
+}
+
+private enviarRangosClasificados(rangosClasificados: { fila: string; inicio: string; fin: string; tipo: string }[], idResumen: number | null): void {
+    rangosClasificados.forEach(rango => {
+        const inicio = this.obtenerIndiceHorario(rango.inicio);
+        const fin = this.obtenerIndiceHorario(rango.fin) - 1; // Ajustar el índice para incluir el último intervalo
+        const tipoHora = rango.tipo; // 'normal' o 'extra'
+
+        console.log(`Enviando rango: Fila: ${rango.fila}, Inicio: ${rango.inicio}, Fin: ${rango.fin}, Tipo: ${tipoHora}`);
+        this.enviarHorasExtra(rango.fila, inicio, fin, idResumen, tipoHora);
+    });
+}
+
+
+
+    private enviarHorasExtra(fila: string, inicio: number, fin: number, idResumen: number | null, tipo_hora: string): void {
+        console.log(`Preparando datos para enviar: fila ${fila}, inicio ${inicio}, fin ${fin}`);
+
         const idAsignacion = this.proyectos[parseInt(fila, 10)]?.id_asignacion || 'Asignación desconocida';
         const fecha = this.convertirFechaAFormatoISO(this.fechaSeleccionada);
         const horaInicio = this.calcularHorario(inicio);
@@ -1343,7 +1432,10 @@ async eliminarHorasPorFecha(): Promise<void> {
             hora_fin: horaFin,
             total_horas: totalHoras,
             id_resumen_horas: idResumen,
+            tipo_hora: tipo_hora, // 'normal' o 'extra'
         };
+
+        console.log('Datos preparados para registrar:', datos);
 
         this.horasExtraService.registrarHorasExtra(datos).subscribe(
             res => console.log('Registro exitoso:', datos),
@@ -1356,16 +1448,22 @@ async eliminarHorasPorFecha(): Promise<void> {
         this.proyectosFiltrados = [...this.proyectos];
         console.log('Estado original restaurado.');
     }
+    totalDecimal: number = 0;
+    extrasDecimal: number = 0;
     async guardar() {
         console.log('El botón Guardar fue presionado.');
 
-        // 1. Eliminar horas por fecha seleccionada
-        await this.eliminarHorasPorFechaSeleccionada();
-
-        // 2. Calcular horas totales y extras
+        // 1. Calcular horas totales y extras
         const { totalDecimal, extrasDecimal } = this.calcularHorasTotalesYExtras();
 
-        // 3. Preparar datos para el resumen
+        this.totalDecimal = totalDecimal;
+        this.extrasDecimal = extrasDecimal;
+
+        if (totalDecimal >= 8 && extrasDecimal > 0) {
+            console.log("HORAS EXTRAS")
+        }
+
+        // 2. Preparar datos para el resumen
         const resumenDatos = {
             id_usuario: this.id_usuario,
             fecha: this.convertirFechaAFormatoISO(this.fechaSeleccionada),
@@ -1373,15 +1471,41 @@ async eliminarHorasPorFecha(): Promise<void> {
             horas_extras: extrasDecimal,
         };
 
-        // 4. Verificar y guardar resumen
-        const idResumen = await this.verificarYGuardarResumen(resumenDatos);
+        // 3. Verificar el valor de total_horas y mostrar mensajes según el caso
+        let mensaje = '';
+        if (totalDecimal < 8) {
+            mensaje = `Se están ingresando menos de 8 horas (${totalDecimal} horas). ¿Deseas continuar?`;
+        } else if (totalDecimal === 8 && extrasDecimal === 0) {
+            mensaje = `Se están ingresando exactamente 8 horas. ¿Deseas guardar los cambios?`;
+        } else {
+            mensaje = `Se están ingresando más de 8 horas (${extrasDecimal} horas). Las horas extra serán enviadas a aprobación. ¿Deseas continuar?`;
+        }
 
-        // 5. Registrar horas extra
-        this.registrarHorasExtra(idResumen);
+        // Mostrar mensaje de confirmación con SweetAlert2
+        const result = await Swal.fire({
+            title: mensaje,
+            icon: totalDecimal > 8 ? 'warning' : 'info',
+            showDenyButton: true,
+            confirmButtonText: "Guardar",
+            denyButtonText: `No guardar`,
+        });
 
-        window.location.reload();
+        if (result.isConfirmed) {
+            // 4. Eliminar horas por fecha seleccionada
+            await this.eliminarHorasPorFechaSeleccionada();
+
+            // 5. Verificar y guardar resumen
+            const idResumen = await this.verificarYGuardarResumen(resumenDatos);
+
+            // 6. Registrar horas extra
+            this.registrarHorasExtra(idResumen);
+
+            window.location.reload();
+        } else if (result.isDenied) {
+            // Mostrar mensaje de que no se guardaron los cambios
+            Swal.fire("Cambios no guardados", "No se realizaron modificaciones.", "info");
+        }
     }
-
 
     convertirFechaAFormatoISO(fecha: string): string {
         const [dia, mes, anio] = fecha.split('-');

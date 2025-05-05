@@ -24,7 +24,7 @@ export class HorasExtraService {
     }
 
     obtenerHorasExtraPorUsuario(id_usuario: number) {
-        return this.http.get<any[]>(`http://localhost:3000/api/horas-extra/${id_usuario}`);
+        return this.http.get<any[]>(`/api/horas-extra/${id_usuario}`);
     }
 
     editarHorasExtra(hora: HorasExtra): Observable<any> {
@@ -73,7 +73,7 @@ export class HorasExtraService {
     }
 
     obtenerResumenHoras() {
-        return this.http.get<any[]>('http://localhost:3000/api/resumen');
+        return this.http.get<any[]>('/api/resumen');
     }
 
     actualizarAprobacion(id_resumen: number, aprobacion: string): Observable<any> {
@@ -109,4 +109,10 @@ export class HorasExtraService {
     obtenerProyectosAsignados(id_usuario: number): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/proyectos/asignados/${id_usuario}`);
     }
+
+    obtenerResumenHorasExtra(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/horas-extra/resumen-horas`);
+    }
+
+
 }

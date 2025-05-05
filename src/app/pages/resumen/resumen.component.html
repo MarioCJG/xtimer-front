@@ -1,1 +1,269 @@
-<p>resumen works!</p>
+<div class="container-fluid mt-5">
+        <!-- Botones para alternar entre los resúmenes -->
+        <div class="text-center mb-4">
+            <button class="btn btn-primary me-2" (click)="mostrarResumen('tablaSuperior')">Resumen Superior</button>
+            <button class="btn btn-secondary" (click)="mostrarResumen('tablaInferior')">Resumen Inferior</button>
+        </div>
+    <div *ngIf="resumenSeleccionado === 'tablaSuperior'"  class="contenido-aprobaciones">
+        <h2 class="text-center">📊 Resumen de Consultores</h2>
+
+        <!-- Resumen de datos -->
+        <div class="resumen-datos mt-4 p-3 bg-light rounded shadow">
+            <!-- <h4 class="text-center text-primary mb-4">📊 Resumen de Datos</h4> -->
+            <div class="row text-center">
+                <!-- Total de registros con total_horas igual a 8 -->
+                <div class="col-md-3 mb-3">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Menos de 8 horas</h5>
+                            <p class="card-text display-6">
+                                <span class="badge bg-primary">{{ totalHorasMenorA8 }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total de registros con horas_extras mayor a 0 -->
+                <div class="col-md-3 mb-3">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">Días con horas extra</h5>
+                            <p class="card-text display-6">
+                                <span class="badge bg-success">{{ horasExtraMayorA0 }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suma total de horas_extras -->
+                <div class="col-md-3 mb-3">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">Suma Horas Extras</h5>
+                            <p class="card-text display-6">
+                                <span class="badge bg-info">{{ parteEntera }} : {{parteDecimal}}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total de aprobaciones pendientes -->
+                <div class="col-md-3 mb-3">
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">Aprobaciones Pendientes</h5>
+                            <p class="card-text display-6">
+                                <span class="badge bg-warning">{{ aprobacionesPendientes }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filtros d-flex justify-content-center gap-3 mb-3">
+                <!-- Filtro por Cargo -->
+                <div class="mb-4">
+                    <label class="form-label" for="filtroCargo">Seleccionar Cargo:</label>
+                    <select id="filtroCargo" class="form-select" [(ngModel)]="filtroCargo" (change)="aplicarFiltros()">
+                        <option value="">Todos los Cargos</option>
+                        <option *ngFor="let cargo of opcionesCargo" [value]="cargo">
+                            {{ cargo }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Filtro por Área -->
+                <div class="mb-4">
+                    <label class="form-label" for="filtroArea">Seleccionar Área:</label>
+                    <select id="filtroArea" class="form-select" [(ngModel)]="filtroArea" (change)="aplicarFiltros()">
+                        <option value="">Todas las Áreas</option>
+                        <option *ngFor="let area of opcionesArea" [value]="area">
+                            {{ area }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Filtro por Consultor -->
+                <div class="mb-4">
+                    <label class="form-label" for="filtroConsultor">Seleccionar Consultor:</label>
+                    <select id="filtroConsultor" class="form-select" [(ngModel)]="filtroConsultor"
+                        (change)="aplicarFiltros()">
+                        <option value="">Todos los Consultores</option>
+                        <option *ngFor="let consultor of opcionesConsultor" [value]="consultor">
+                            {{ consultor }}
+                        </option>
+                    </select>
+                </div>
+                <!-- Filtro por Fecha Desde -->
+                <div class="mb-4">
+                    <label class="form-label" for="filtroFechaDesde">Fecha Desde:</label>
+                    <input id="filtroFechaDesde" type="date" class="form-control" [(ngModel)]="filtroFechaDesde"
+                        (change)="aplicarFiltros()" />
+                </div>
+
+                <!-- Filtro por Fecha Hasta -->
+                <div class="mb-4">
+                    <label class="form-label" for="filtroFechaHasta">Fecha Hasta:</label>
+                    <input id="filtroFechaHasta" type="date" class="form-control" [(ngModel)]="filtroFechaHasta"
+                        (change)="aplicarFiltros()" />
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Tabla para mostrar el resumen de horas -->
+        <table class="table table-bordered table-dark mt-4">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID Resumen</th>
+                    <th>Consultor</th>
+                    <th>Cargo</th>
+                    <th>Área</th>
+                    <th>Fecha</th>
+                    <th>Total Horas</th>
+                    <th>Horas Extras</th>
+                    <th>Aprobación</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let hora of horasFiltradas">
+                    <td>{{ hora.id_resumen }}</td>
+                    <td>{{ hora.consultor_nombre }}</td>
+                    <td>{{ hora.cargo_nombre }}</td>
+                    <td>{{ hora.area_nombre }}</td>
+                    <td>{{ hora.fecha | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ hora.total_horas }}</td>
+                    <td>{{ hora.horas_extras }}</td>
+                    <td>{{ hora.aprobacion }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="resumenSeleccionado === 'tablaInferior'" class="contenido-aprobaciones">
+        <h2 class="text-center">📊 Resumen de Proyectos</h2>
+        <!-- Resumen de datos para la nueva tabla -->
+        <div class="resumen-datos mt-4 p-3 bg-light rounded shadow">
+            <div class="row text-center mt-4">
+                <!-- Total de proyectos -->
+                <div class="col-md-4 mb-3">
+                    <div class="card border-primary">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">Total de Proyectos</h5>
+                            <p class="card-text display-6">
+                                <span class="badge bg-primary">{{ resumenHorasExtraFiltradas.length }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total de horas normales -->
+                <div class="col-md-4 mb-3">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">Total Horas Normales</h5>
+                            <p class="card-text display-6">
+                                <span class="badge bg-success">{{ parteEnteraHorasNormales }} : {{ parteDecimalHorasNormales }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total de horas extras -->
+                <div class="col-md-4 mb-3">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">Total Horas Extras</h5>
+                            <p class="card-text display-6">
+                                <span class="badge bg-info">{{ parteEnteraHorasExtra }} : {{ parteDecimalHorasExtra }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros para la nueva tabla -->
+                <div class="filtros d-flex justify-content-center gap-3 mb-3">
+                    <!-- Filtro por Fecha Desde -->
+                    <div class="mb-4">
+                        <label class="form-label" for="filtroFechaDesdeExtra">Fecha Desde:</label>
+                        <input id="filtroFechaDesdeExtra" type="date" class="form-control"
+                            [(ngModel)]="filtroFechaDesdeExtra" (change)="aplicarFiltrosExtra()" />
+                    </div>
+
+                    <!-- Filtro por Fecha Hasta -->
+                    <div class="mb-4">
+                        <label class="form-label" for="filtroFechaHastaExtra">Fecha Hasta:</label>
+                        <input id="filtroFechaHastaExtra" type="date" class="form-control"
+                            [(ngModel)]="filtroFechaHastaExtra" (change)="aplicarFiltrosExtra()" />
+                    </div>
+
+                    <!-- Filtro por Proyecto -->
+                    <div class="mb-4">
+                        <label class="form-label" for="filtroProyecto">Proyecto:</label>
+                        <select id="filtroProyecto" class="form-select" [(ngModel)]="filtroProyecto"
+                            (change)="aplicarFiltrosExtra()">
+                            <option value="">Todos los Proyectos</option>
+                            <option *ngFor="let proyecto of opcionesProyectos" [value]="proyecto">
+                                {{ proyecto }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Cliente -->
+                    <div class="mb-4">
+                        <label class="form-label" for="filtroCliente">Cliente:</label>
+                        <select id="filtroCliente" class="form-select" [(ngModel)]="filtroCliente"
+                            (change)="aplicarFiltrosExtra()">
+                            <option value="">Todos los Clientes</option>
+                            <option *ngFor="let cliente of opcionesClientes" [value]="cliente">
+                                {{ cliente }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Consultores -->
+                    <div class="mb-4">
+                        <label class="form-label" for="filtroConsultores">Consultores:</label>
+                        <select id="filtroConsultores" class="form-select" [(ngModel)]="filtroConsultores"
+                            (change)="aplicarFiltrosExtra()">
+                            <option value="">Todos los Consultores</option>
+                            <option *ngFor="let consultor of opcionesConsultores" [value]="consultor">
+                                {{ consultor }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva tabla para mostrar el resumen de horas extra -->
+        <table class="table table-bordered table-dark mt-4">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Proyecto</th>
+                    <th>Cliente</th>
+                    <th>Horas Normales</th>
+                    <th>Horas Extras</th>
+                    <th>Total Horas</th>
+                    <!-- <th>Usuarios</th> -->
+                    <th>Consultores</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let resumen of resumenHorasExtraFiltradas">
+                    <td>{{ resumen.fecha | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ resumen.proyecto_nombre }}</td>
+                    <td>{{ resumen.cliente_nombre }}</td>
+                    <td>{{ resumen.horas_normales }}</td>
+                    <td>{{ resumen.horas_extras }}</td>
+                    <td>{{ resumen.total_horas }}</td>
+                    <!-- <td>{{ resumen.usuarios }}</td> -->
+                    <td>{{ resumen.consultores }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>

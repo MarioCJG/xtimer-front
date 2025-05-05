@@ -31,6 +31,24 @@
     <h4 class="text-center seccion-titulo">📆 Calendario del Mes</h4>
     <div *ngIf="fechaSeleccionada">
       <h5>📅 Fecha seleccionada: {{ fechaSeleccionada }}</h5>
+
+      <div class="d-flex justify-content-center align-items-center mt-3">
+        <div style="display: flex; align-items: center; gap: 5px;">
+          <div style="background-color: #f0ad4e; width: 20px; height: 20px; border-radius: 5px;"></div>
+          <span>menos de 8 horas</span>
+        </div>
+        <div style="width: 10px; height: 20px;"></div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+          <div style="background-color: #5cb85c; width: 20px; height: 20px; border-radius: 5px;"></div>
+          <span>8 horas</span>
+        </div>
+        <div style="width: 10px; height: 20px;"></div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+          <div style="background-color: #5bc0de; width: 20px; height: 20px; border-radius: 5px;"></div>
+          <span>más de 8 horas</span>
+        </div>
+      </div>
+      
     </div>
 
     <div class="d-flex justify-content-center gap-4 align-items-center flex-wrap">
