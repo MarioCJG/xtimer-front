@@ -1,10 +1,22 @@
 <div class="container-fluid mt-5">
-        <!-- Botones para alternar entre los resúmenes -->
-        <div class="text-center mb-4">
-            <button class="btn btn-primary me-2" (click)="mostrarResumen('tablaSuperior')">Resumen Superior</button>
-            <button class="btn btn-secondary" (click)="mostrarResumen('tablaInferior')">Resumen Inferior</button>
-        </div>
-    <div *ngIf="resumenSeleccionado === 'tablaSuperior'"  class="contenido-aprobaciones">
+
+    <!-- Botones para alternar entre los resúmenes -->
+    <div class="text-center mb-4">
+        <button class="btn me-2" [ngClass]="{
+          'btn-primary': resumenSeleccionado === 'tablaSuperior',
+          'btn-secondary': resumenSeleccionado !== 'tablaSuperior'
+        }" (click)="mostrarResumen('tablaSuperior')">
+            Resumen de Consultores
+        </button>
+        <button class="btn" [ngClass]="{
+          'btn-primary': resumenSeleccionado === 'tablaInferior',
+          'btn-secondary': resumenSeleccionado !== 'tablaInferior'
+        }" (click)="mostrarResumen('tablaInferior')">
+            Resumen de Proyectos
+        </button>
+    </div>
+
+    <div *ngIf="resumenSeleccionado === 'tablaSuperior'" class="contenido-aprobaciones">
         <h2 class="text-center">📊 Resumen de Consultores</h2>
 
         <!-- Resumen de datos -->
@@ -164,7 +176,8 @@
                         <div class="card-body">
                             <h5 class="card-title text-success">Total Horas Normales</h5>
                             <p class="card-text display-6">
-                                <span class="badge bg-success">{{ parteEnteraHorasNormales }} : {{ parteDecimalHorasNormales }}</span>
+                                <span class="badge bg-success">{{ parteEnteraHorasNormales }} : {{
+                                    parteDecimalHorasNormales }}</span>
                             </p>
                         </div>
                     </div>
@@ -176,7 +189,8 @@
                         <div class="card-body">
                             <h5 class="card-title text-info">Total Horas Extras</h5>
                             <p class="card-text display-6">
-                                <span class="badge bg-info">{{ parteEnteraHorasExtra }} : {{ parteDecimalHorasExtra }}</span>
+                                <span class="badge bg-info">{{ parteEnteraHorasExtra }} : {{ parteDecimalHorasExtra
+                                    }}</span>
                             </p>
                         </div>
                     </div>

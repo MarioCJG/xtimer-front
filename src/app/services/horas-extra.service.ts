@@ -73,7 +73,7 @@ export class HorasExtraService {
     }
 
     obtenerResumenHoras() {
-        return this.http.get<any[]>('/api/resumen');
+        return this.http.get<any[]>(`${this.apiUrl}/resumen`);
     }
 
     actualizarAprobacion(id_resumen: number, aprobacion: string): Observable<any> {

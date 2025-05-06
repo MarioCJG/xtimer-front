@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { DarkModeService } from '../../services/dark-mode.service';
 import { FormsModule } from '@angular/forms';
 
+import Swal from 'sweetalert2';
+
 
 @Component({
     selector: 'app-aprobaciones',
@@ -152,27 +154,71 @@ export class AprobacionesComponent implements OnInit {
         );
     }
     aprobarHoraExtra(id_resumen: number) {
-        this.horasExtraService.actualizarAprobacion(id_resumen, 'aprobado').subscribe(
-            res => {
-                console.log('Hora extra aprobada con éxito:', res);
-                this.cargarResumenHoras(); // Recargar los datos después de la actualización
-            },
-            err => {
-                console.error('❌ Error al aprobar la hora extra:', err);
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¿Deseas aprobar esta hora extra?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, aprobar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.horasExtraService.actualizarAprobacion(id_resumen, 'aprobado').subscribe(
+                    res => {
+                        Swal.fire(
+                            '¡Aprobado!',
+                            'La hora extra ha sido aprobada con éxito.',
+                            'success'
+                        );
+                        this.cargarResumenHoras(); // Recargar los datos después de la actualización
+                    },
+                    err => {
+                        Swal.fire(
+                            'Error',
+                            'Ocurrió un error al aprobar la hora extra.',
+                            'error'
+                        );
+                        console.error('❌ Error al aprobar la hora extra:', err);
+                    }
+                );
             }
-        );
+        });
     }
 
     rechazarHoraExtra(id_resumen: number) {
-        this.horasExtraService.actualizarAprobacion(id_resumen, 'rechazado').subscribe(
-            res => {
-                console.log('Hora extra rechazada con éxito:', res);
-                this.cargarResumenHoras(); // Recargar los datos después de la actualización
-            },
-            err => {
-                console.error('❌ Error al rechazar la hora extra:', err);
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¿Deseas rechazar esta hora extra?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, rechazar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.horasExtraService.actualizarAprobacion(id_resumen, 'rechazado').subscribe(
+                    res => {
+                        Swal.fire(
+                            '¡Rechazado!',
+                            'La hora extra ha sido rechazada con éxito.',
+                            'success'
+                        );
+                        this.cargarResumenHoras(); // Recargar los datos después de la actualización
+                    },
+                    err => {
+                        Swal.fire(
+                            'Error',
+                            'Ocurrió un error al rechazar la hora extra.',
+                            'error'
+                        );
+                        console.error('❌ Error al rechazar la hora extra:', err);
+                    }
+                );
             }
-        );
+        });
     }
 
     actualizarEstadoHoraExtra(id: number, nuevoEstado: string) {

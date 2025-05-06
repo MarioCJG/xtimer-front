@@ -1,84 +1,60 @@
 <div class="container-fluid">
   <div class="contenido-admin">
-    <div
-      class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end"
-    >
+    <div class="modo-switch d-flex align-items-center gap-2 mb-4 justify-content-end">
       <span class="icon" [class.active]="!darkModeService.modoOscuro">🌞</span>
       <label class="switch">
-        <input
-          type="checkbox"
-          [checked]="darkModeService.modoOscuro"
-          (change)="darkModeService.toggleModo()"
-        />
+        <input type="checkbox" [checked]="darkModeService.modoOscuro" (change)="darkModeService.toggleModo()" />
         <span class="slider round"></span>
       </label>
       <span class="icon" [class.active]="darkModeService.modoOscuro">🌙</span>
     </div>
 
     <h1 class="titulo-centrado">Panel de Administración</h1>
-    
+
     <!-- Barra de navegación -->
     <div class="btn-toolbar mb-3" role="toolbar">
       <div class="btn-group me-2" role="group">
-        <button
-          class="btn"
-          [ngClass]="{
+        <button class="btn" [ngClass]="{
             'btn-secondary': seccionActiva !== 'crearCliente',
             'btn-primary': seccionActiva === 'crearCliente'
-          }"
-          (click)="mostrarSeccion('crearCliente')"
-        >
+          }" (click)="mostrarSeccion('crearCliente')">
           Crear un nuevo cliente
         </button>
-        <button
-          class="btn"
-          [ngClass]="{
+        <button class="btn" [ngClass]="{
             'btn-secondary': seccionActiva !== 'crearArea',
             'btn-primary': seccionActiva === 'crearArea'
-          }"
-          (click)="mostrarSeccion('crearArea')"
-        >
+          }" (click)="mostrarSeccion('crearArea')">
           Crear una nueva área
         </button>
-        <button
-          class="btn"
-          [ngClass]="{
+        <button class="btn" [ngClass]="{
             'btn-secondary': seccionActiva !== 'crearCargo',
             'btn-primary': seccionActiva === 'crearCargo'
-          }"
-          (click)="mostrarSeccion('crearCargo')"
-        >
+          }" (click)="mostrarSeccion('crearCargo')">
           Crear un nuevo cargo
         </button>
-        <button
-          class="btn"
-          [ngClass]="{
+        <button class="btn" [ngClass]="{
             'btn-secondary': seccionActiva !== 'crearProyecto',
             'btn-primary': seccionActiva === 'crearProyecto'
-          }"
-          (click)="mostrarSeccion('crearProyecto')"
-        >
+          }" (click)="mostrarSeccion('crearProyecto')">
           Crear un nuevo proyecto
         </button>
-        <button
-          class="btn"
-          [ngClass]="{
+        <button class="btn" [ngClass]="{
             'btn-secondary': seccionActiva !== 'asignarConsultores',
             'btn-primary': seccionActiva === 'asignarConsultores'
-          }"
-          (click)="mostrarSeccion('asignarConsultores')"
-        >
+          }" (click)="mostrarSeccion('asignarConsultores')">
           Asignar consultores
         </button>
-        <button
-          class="btn"
-          [ngClass]="{
+        <button class="btn" [ngClass]="{
             'btn-secondary': seccionActiva !== 'crearUsuarioConsultor',
             'btn-primary': seccionActiva === 'crearUsuarioConsultor'
-          }"
-          (click)="mostrarSeccion('crearUsuarioConsultor')"
-        >
+          }" (click)="mostrarSeccion('crearUsuarioConsultor')">
           Crear usuario y consultor
+        </button>
+        <button class="btn" [ngClass]="{
+            'btn-secondary': seccionActiva !== 'eliminar',
+            'btn-primary': seccionActiva === 'eliminar'
+          }" (click)="mostrarSeccion('eliminar')">
+          Eliminar
         </button>
       </div>
     </div>
@@ -90,50 +66,24 @@
       <p>Crear un nuevo cliente:</p>
       <form (ngSubmit)="crearCliente()">
         <div class="mb-3">
-          <label for="nombreCliente" class="form-label"
-            >Nombre del Cliente</label
-          >
-          <input
-            type="text"
-            id="nombreCliente"
-            class="form-control"
-            [(ngModel)]="nombreCliente"
-            name="nombreCliente"
-            required
-          />
+          <label for="nombreCliente" class="form-label">Nombre del Cliente</label>
+          <input type="text" id="nombreCliente" class="form-control" [(ngModel)]="nombreCliente" name="nombreCliente"
+            required />
         </div>
         <div class="mb-3">
           <label for="contactoCliente" class="form-label">Contacto</label>
-          <input
-            type="text"
-            id="contactoCliente"
-            class="form-control"
-            [(ngModel)]="contactoCliente"
-            name="contactoCliente"
-            required
-          />
+          <input type="text" id="contactoCliente" class="form-control" [(ngModel)]="contactoCliente"
+            name="contactoCliente" required />
         </div>
         <div class="mb-3">
           <label for="emailCliente" class="form-label">Email</label>
-          <input
-            type="email"
-            id="emailCliente"
-            class="form-control"
-            [(ngModel)]="emailCliente"
-            name="emailCliente"
-            required
-          />
+          <input type="email" id="emailCliente" class="form-control" [(ngModel)]="emailCliente" name="emailCliente"
+            required />
         </div>
         <div class="mb-3">
           <label for="telefonoCliente" class="form-label">Teléfono</label>
-          <input
-            type="text"
-            id="telefonoCliente"
-            class="form-control"
-            [(ngModel)]="telefonoCliente"
-            name="telefonoCliente"
-            required
-          />
+          <input type="text" id="telefonoCliente" class="form-control" [(ngModel)]="telefonoCliente"
+            name="telefonoCliente" required />
         </div>
         <button type="submit" class="btn btn-primary">Guardar Cliente</button>
       </form>
@@ -145,14 +95,7 @@
       <form (ngSubmit)="crearArea()">
         <div class="mb-3">
           <label for="nombreArea" class="form-label">Nombre del Área</label>
-          <input
-            type="text"
-            id="nombreArea"
-            class="form-control"
-            [(ngModel)]="nombreArea"
-            name="nombreArea"
-            required
-          />
+          <input type="text" id="nombreArea" class="form-control" [(ngModel)]="nombreArea" name="nombreArea" required />
         </div>
         <button type="submit" class="btn btn-primary">Guardar Área</button>
       </form>
@@ -164,14 +107,8 @@
       <form (ngSubmit)="crearCargo()">
         <div class="mb-3">
           <label for="nombreCargo" class="form-label">Nombre del Cargo</label>
-          <input
-            type="text"
-            id="nombreCargo"
-            class="form-control"
-            [(ngModel)]="nombreCargo"
-            name="nombreCargo"
-            required
-          />
+          <input type="text" id="nombreCargo" class="form-control" [(ngModel)]="nombreCargo" name="nombreCargo"
+            required />
         </div>
         <button type="submit" class="btn btn-primary">Guardar Cargo</button>
       </form>
@@ -182,44 +119,20 @@
       <p>Crear un nuevo proyecto:</p>
       <form (ngSubmit)="crearProyecto()">
         <div class="mb-3">
-          <label for="nombreProyecto" class="form-label"
-            >Nombre del Proyecto</label
-          >
-          <input
-            type="text"
-            id="nombreProyecto"
-            class="form-control"
-            [(ngModel)]="nombreProyecto"
-            name="nombreProyecto"
-            required
-          />
+          <label for="nombreProyecto" class="form-label">Nombre del Proyecto</label>
+          <input type="text" id="nombreProyecto" class="form-control" [(ngModel)]="nombreProyecto" name="nombreProyecto"
+            required />
         </div>
         <div class="mb-3">
-          <label for="descripcionProyecto" class="form-label"
-            >Descripción</label
-          >
-          <textarea
-            id="descripcionProyecto"
-            class="form-control"
-            [(ngModel)]="descripcionProyecto"
-            name="descripcionProyecto"
-            rows="3"
-            required
-          ></textarea>
+          <label for="descripcionProyecto" class="form-label">Descripción</label>
+          <textarea id="descripcionProyecto" class="form-control" [(ngModel)]="descripcionProyecto"
+            name="descripcionProyecto" rows="3" required></textarea>
         </div>
         <div class="mb-3">
           <label for="clienteProyecto" class="form-label">Cliente</label>
-          <select
-            id="clienteProyecto"
-            class="form-select"
-            [(ngModel)]="idClienteSeleccionado"
-            name="clienteProyecto"
-            required
-          >
-            <option
-              *ngFor="let cliente of clientes"
-              [value]="cliente.id_cliente"
-            >
+          <select id="clienteProyecto" class="form-select" [(ngModel)]="idClienteSeleccionado" name="clienteProyecto"
+            required>
+            <option *ngFor="let cliente of clientes" [value]="cliente.id_cliente">
               {{ cliente.nombre }}
             </option>
           </select>
@@ -231,37 +144,23 @@
           <div *ngFor="let consultor of consultores">
             <div class="form-check d-flex align-items-center">
               <!-- Checkbox para seleccionar consultor -->
-              <input
-                class="form-check-input me-2"
-                type="checkbox"
-                [id]="'consultor-' + consultor.id_consultor"
+              <input class="form-check-input me-2" type="checkbox" [id]="'consultor-' + consultor.id_consultor"
                 [checked]="
                   consultoresSeleccionados.includes(consultor.id_consultor)
-                "
-                (change)="
+                " (change)="
                   toggleConsultorSeleccionado(consultor.id_consultor, $event)
-                "
-              />
+                " />
 
               <!-- Nombre del consultor -->
-              <label
-                class="form-check-label me-3"
-                [for]="'consultor-' + consultor.id_consultor"
-              >
+              <label class="form-check-label me-3" [for]="'consultor-' + consultor.id_consultor">
                 {{ consultor.nombre }} {{ consultor.apellido }}
               </label>
 
               <!-- Campo para ingresar valor por hora -->
-              <input
-                type="number"
-                class="form-control w-auto"
-                placeholder="Valor por hora"
-                [(ngModel)]="consultor.valor_hora"
-                [name]="'valorHora-' + consultor.id_consultor"
-                [disabled]="
+              <input type="number" class="form-control w-auto" placeholder="Valor por hora"
+                [(ngModel)]="consultor.valor_hora" [name]="'valorHora-' + consultor.id_consultor" [disabled]="
                   !consultoresSeleccionados.includes(consultor.id_consultor)
-                "
-              />
+                " />
             </div>
           </div>
         </div>
@@ -275,21 +174,10 @@
       <p>Asignar consultores a un proyecto existente:</p>
 
       <div class="mb-3">
-        <label for="proyectoSeleccionado" class="form-label"
-          >Seleccionar Proyecto</label
-        >
-        <select
-          id="proyectoSeleccionado"
-          class="form-select"
-          [(ngModel)]="idProyectoSeleccionado"
-          (change)="cargarConsultoresAsignados()"
-          name="proyectoSeleccionado"
-          required
-        >
-          <option
-            *ngFor="let proyecto of proyectos"
-            [value]="proyecto.id_proyecto"
-          >
+        <label for="proyectoSeleccionado" class="form-label">Seleccionar Proyecto</label>
+        <select id="proyectoSeleccionado" class="form-select" [(ngModel)]="idProyectoSeleccionado"
+          (change)="cargarConsultoresAsignados()" name="proyectoSeleccionado" required>
+          <option *ngFor="let proyecto of proyectos" [value]="proyecto.id_proyecto">
             {{ proyecto.nombre }}
           </option>
         </select>
@@ -300,118 +188,75 @@
         <div *ngFor="let consultor of consultores">
           <div class="form-check d-flex align-items-center">
             <!-- Checkbox para seleccionar consultor -->
-            <input
-              class="form-check-input me-2"
-              type="checkbox"
-              [id]="'consultor-' + consultor.id_consultor"
+            <input class="form-check-input me-2" type="checkbox" [id]="'consultor-' + consultor.id_consultor"
               [checked]="consultoresAsignados.includes(consultor.id_consultor)"
-              (change)="toggleConsultorAsignado(consultor, $event)"
-            />
+              (change)="toggleConsultorAsignado(consultor, $event)" />
 
             <!-- Nombre del consultor -->
-            <label
-              class="form-check-label me-3"
-              [for]="'consultor-' + consultor.id_consultor"
-            >
+            <label class="form-check-label me-3" [for]="'consultor-' + consultor.id_consultor">
               {{ consultor.nombre }} {{ consultor.apellido }}
             </label>
 
             <!-- Campo para ingresar valor por hora -->
-            <input
-              type="number"
-              class="form-control w-auto"
-              placeholder="Valor por hora"
-              [(ngModel)]="consultor.valor_hora"
-              [name]="'valorHora-' + consultor.id_consultor"
-              [disabled]="
+            <input type="number" class="form-control w-auto" placeholder="Valor por hora"
+              [(ngModel)]="consultor.valor_hora" [name]="'valorHora-' + consultor.id_consultor" [disabled]="
                 !consultoresAsignados.includes(consultor.id_consultor)
-              "
-            />
+              " />
           </div>
         </div>
       </div>
 
-      <button
-        class="btn btn-primary"
-        (click)="guardarAsignaciones(asignaciones)"
-      >
+      <button class="btn btn-primary" (click)="guardarAsignaciones(asignaciones)">
         Guardar Asignaciones
       </button>
     </div>
 
     <!-- Sección: Crear un nuevo usuario y consultor -->
-    <div
-      id="crearUsuarioConsultor"
-      *ngIf="seccionActiva === 'crearUsuarioConsultor'"
-    >
+    <div id="crearUsuarioConsultor" *ngIf="seccionActiva === 'crearUsuarioConsultor'">
       <p>Crear un nuevo usuario y consultor:</p>
       <form (ngSubmit)="crearUsuarioYConsultor()">
         <div class="mb-3">
-          <label for="emailUsuario" class="form-label"
-            >Correo Electrónico</label
-          >
-          <input
-            type="email"
-            id="emailUsuario"
-            class="form-control"
-            [(ngModel)]="emailUsuario"
-            name="emailUsuario"
-            required
-          />
+          <label for="emailUsuario" class="form-label">Correo Electrónico</label>
+          <input type="email" id="emailUsuario" class="form-control" [(ngModel)]="emailUsuario" name="emailUsuario"
+            required />
         </div>
         <div class="mb-3">
-          <label for="nombreConsultor" class="form-label"
-            >Nombre del Consultor</label
-          >
-          <input
-            type="text"
-            id="nombreConsultor"
-            class="form-control"
-            [(ngModel)]="nombreConsultor"
-            name="nombreConsultor"
-            required
-          />
+          <label for="nombreConsultor" class="form-label">Nombre del Consultor</label>
+          <input type="text" id="nombreConsultor" class="form-control" [(ngModel)]="nombreConsultor"
+            name="nombreConsultor" required />
         </div>
         <div class="mb-3">
-          <label for="apellidoConsultor" class="form-label"
-            >Apellido del Consultor</label
-          >
-          <input
-            type="text"
-            id="apellidoConsultor"
-            class="form-control"
-            [(ngModel)]="apellidoConsultor"
-            name="apellidoConsultor"
-            required
-          />
+          <label for="apellidoConsultor" class="form-label">Apellido del Consultor</label>
+          <input type="text" id="apellidoConsultor" class="form-control" [(ngModel)]="apellidoConsultor"
+            name="apellidoConsultor" required />
         </div>
-  
-      <!-- Lista desplegable de Cargos -->
-      <div class="mb-3">
-        <label for="cargoConsultor" class="form-label">Cargo</label>
-        <select id="cargoConsultor" class="form-select" [(ngModel)]="idCargoSeleccionado" name="cargoConsultor"
-          required>
-          <option *ngFor="let cargo of cargos" [value]="cargo.id_cargo">{{ cargo.nombre }}</option>
-        </select>
-      </div>
 
-      <!-- Lista desplegable de Roles -->
-      <div class="mb-3">
-        <label for="rolConsultor" class="form-label">Rol</label>
-        <select id="rolConsultor" class="form-select" [(ngModel)]="idRolSeleccionado" name="rolConsultor" required>
-          <option *ngFor="let rol of roles" [value]="rol.id_rol">{{ rol.nombre }}</option>
-        </select>
-      </div>
+        <!-- Lista desplegable de Cargos -->
+        <div class="mb-3">
+          <label for="cargoConsultor" class="form-label">Cargo</label>
+          <select id="cargoConsultor" class="form-select" [(ngModel)]="idCargoSeleccionado" name="cargoConsultor"
+            required>
+            <option *ngFor="let cargo of cargos" [value]="cargo.id_cargo">{{ cargo.nombre }}</option>
+          </select>
+        </div>
 
-      <!-- Lista desplegable de Áreas -->
-      <div class="mb-3">
-        <label for="areaConsultor" class="form-label">Área</label>
-        <select id="areaConsultor" class="form-select" [(ngModel)]="idAreaSeleccionada" name="areaConsultor" required>
-          <option *ngFor="let area of areas" [value]="area.id_area">{{ area.nombre }}</option>
-        </select>
-      </div>
+        <!-- Lista desplegable de Roles -->
+        <div class="mb-3">
+          <label for="rolConsultor" class="form-label">Rol</label>
+          <select id="rolConsultor" class="form-select" [(ngModel)]="idRolSeleccionado" name="rolConsultor" required>
+            <option *ngFor="let rol of roles" [value]="rol.id_rol">{{ rol.nombre }}</option>
+          </select>
+        </div>
 
-      <button type="submit" class="btn btn-primary">
+        <!-- Lista desplegable de Áreas -->
+        <div class="mb-3">
+          <label for="areaConsultor" class="form-label">Área</label>
+          <select id="areaConsultor" class="form-select" [(ngModel)]="idAreaSeleccionada" name="areaConsultor" required>
+            <option *ngFor="let area of areas" [value]="area.id_area">{{ area.nombre }}</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
           Crear Usuario y Consultor
         </button>
       </form>
@@ -421,5 +266,101 @@
     <div *ngIf="mensajeUsuario" class="alert alert-info mt-3">
       {{ mensajeUsuario }}
     </div>
+
+    <!-- Sección: Eliminar -->
+    <div id="eliminar" *ngIf="seccionActiva === 'eliminar'">
+      <p>Eliminar Área:</p>
+      <form (ngSubmit)="eliminarArea()">
+        <div class="mb-3">
+          <label for="areaSeleccionada" class="form-label">Seleccione un Área</label>
+          <select id="areaSeleccionada" class="form-select" [(ngModel)]="idAreaSeleccionada" name="areaSeleccionada"
+            required>
+            <option value="" disabled selected>Seleccione un área</option>
+            <option *ngFor="let area of areas" [value]="area.id_area">
+              {{ area.nombre }}
+            </option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-danger" [disabled]="!idAreaSeleccionada">
+          Eliminar Área
+        </button>
+      </form>
+
+      <hr />
+
+      <p>Eliminar Cargo:</p>
+      <form (ngSubmit)="eliminarCargo()">
+        <div class="mb-3">
+          <label for="cargoSeleccionado" class="form-label">Seleccione un Cargo</label>
+          <select id="cargoSeleccionado" class="form-select" [(ngModel)]="idCargoSeleccionado" name="cargoSeleccionado"
+            required>
+            <option value="" disabled selected>Seleccione un cargo</option>
+            <option *ngFor="let cargo of cargos" [value]="cargo.id_cargo">
+              {{ cargo.nombre }}
+            </option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-danger" [disabled]="!idCargoSeleccionado">
+          Eliminar Cargo
+        </button>
+      </form>
+
+      <hr />
+
+      <p>Eliminar Proyecto:</p>
+      <form (ngSubmit)="eliminarProyecto()">
+        <div class="mb-3">
+          <label for="proyectoSeleccionado" class="form-label">Seleccione un Proyecto</label>
+          <select id="proyectoSeleccionado" class="form-select" [(ngModel)]="idProyectoSeleccionado"
+            name="proyectoSeleccionado" required>
+            <option value="" disabled selected>Seleccione un proyecto</option>
+            <option *ngFor="let proyecto of proyectos" [value]="proyecto.id_proyecto">
+              {{ proyecto.nombre }}
+            </option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-danger" [disabled]="!idProyectoSeleccionado">
+          Eliminar Proyecto
+        </button>
+      </form>
+
+      <hr />
+
+      <p>Eliminar Cliente:</p>
+      <form (ngSubmit)="eliminarCliente()">
+        <div class="mb-3">
+          <label for="clienteSeleccionado" class="form-label">Seleccione un Cliente</label>
+          <select id="clienteSeleccionado" class="form-select" [(ngModel)]="idClienteSeleccionado"
+            name="clienteSeleccionado" required>
+            <option value="" disabled selected>Seleccione un cliente</option>
+            <option *ngFor="let cliente of clientes" [value]="cliente.id_cliente">
+              {{ cliente.nombre }} - {{ cliente.contacto }}
+            </option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-danger" [disabled]="!idClienteSeleccionado">
+          Eliminar Cliente
+        </button>
+      </form>
+
+      <hr />
+
+      <p>Eliminar Usuario:</p>
+      <div class="mb-3">
+        <label for="usuarioSeleccionado" class="form-label">Seleccione un Usuario</label>
+        <form (ngSubmit)="eliminarUsuarioConsultor()">
+          <select id="usuarioSeleccionado" class="form-select" [(ngModel)]="idUsuarioSeleccionado"
+            name="usuarioSeleccionado" (change)="onUsuarioChange($event)" required>
+            <option value="" disabled selected>Seleccione un usuario</option>
+            <option *ngFor="let usuario of usuarios" [value]="usuario.id">
+              {{ usuario.nombre }} {{ usuario.apellido }} - {{ usuario.email }}
+            </option>
+          </select>
+          <button type="submit" class="btn btn-danger mt-3" [disabled]="!idUsuarioSeleccionado">
+            Eliminar Usuario y Consultor
+          </button>
+        </form>
+      </div>
+
+    </div>
   </div>
-</div>

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { DarkModeService } from '../../services/dark-mode.service';
 
+import Swal from 'sweetalert2';
+
 
 @Component({
   selector: 'app-admin',
@@ -72,6 +74,7 @@ export class AdminComponent implements OnInit {
     this.cargarCargos();
     this.cargarRoles();
     this.cargarAreas();
+    this.cargarUsuarios();
 
     this.mostrarSeccion("crearCliente");
 
@@ -106,7 +109,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarCargos() {
-    this.http.get<any[]>('/api/cargos').subscribe(
+    this.http.get<any[]>('http://localhost:3000/api/cargos').subscribe(
       res => {
         this.cargos = res;
         console.log('Cargos cargados:', this.cargos); // Verificar los datos de cargos
@@ -118,7 +121,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarRoles() {
-    this.http.get<any[]>('/api/roles').subscribe(
+    this.http.get<any[]>('http://localhost:3000/api/roles').subscribe(
       res => {
         this.roles = res;
         console.log('Roles cargados:', this.roles); // Verificar los datos de roles
@@ -130,7 +133,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarAreas() {
-    this.http.get<any[]>('/api/areas').subscribe(
+    this.http.get<any[]>('http://localhost:3000/api/areas').subscribe(
       res => {
         this.areas = res;
         console.log('Áreas cargadas:', this.areas); // Verificar los datos de áreas
@@ -141,8 +144,92 @@ export class AdminComponent implements OnInit {
     );
   }
 
+  eliminarArea(): void {
+    if (!this.idAreaSeleccionada) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Debe seleccionar un área para eliminar.'
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.delete(`http://localhost:3000/api/areas/${this.idAreaSeleccionada}`).subscribe(
+          () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Área eliminada con éxito.'
+            });
+            this.cargarAreas(); // Recargar la lista de áreas
+            this.idAreaSeleccionada = null; // Limpiar selección
+          },
+          (err) => {
+            console.error('Error al eliminar el área:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al eliminar el área.'
+            });
+          }
+        );
+      }
+    });
+  }
+
+  eliminarCargo(): void {
+    if (!this.idCargoSeleccionado) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Debe seleccionar un cargo para eliminar.'
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.delete(`http://localhost:3000/api/cargos/${this.idCargoSeleccionado}`).subscribe(
+          () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Cargo eliminado con éxito.'
+            });
+            this.cargarCargos(); // Recargar la lista de cargos
+            this.idCargoSeleccionado = null; // Limpiar selección
+          },
+          (err) => {
+            console.error('Error al eliminar el cargo:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al eliminar el cargo.'
+            });
+          }
+        );
+      }
+    });
+  }
+
   cargarClientes() {
-    this.http.get<any[]>('/api/clientes').subscribe(
+    this.http.get<any[]>('http://localhost:3000/api/clientes').subscribe(
       res => {
         this.clientes = res;
       },
@@ -153,7 +240,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarConsultores() {
-    this.http.get<any[]>('/api/consultores').subscribe(
+    this.http.get<any[]>('http://localhost:3000/api/consultores').subscribe(
       res => {
         this.consultores = res;
       },
@@ -164,7 +251,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarProyectos() {
-    this.http.get<any[]>('/api/proyectos').subscribe(
+    this.http.get<any[]>('http://localhost:3000/api/proyectos').subscribe(
       res => {
         this.proyectos = res;
       },
@@ -178,7 +265,7 @@ export class AdminComponent implements OnInit {
     if (!this.idProyectoSeleccionado) return;
 
     this.http
-      .get<any[]>(`/api/proyectos-asignados/${this.idProyectoSeleccionado}`)
+      .get<any[]>(`http://localhost:3000/api/proyectos-asignados/${this.idProyectoSeleccionado}`)
       .subscribe(
         res => {
           // Actualizar la lista de consultores asignados con sus valores por hora
@@ -218,268 +305,515 @@ export class AdminComponent implements OnInit {
     console.log('Consultores asignados:', this.consultoresAsignados);
   }
 
-    
 
 
-guardarAsignaciones(asignaciones: any) {
-  // Construir las asignaciones con el valor por hora
-  const asignacionesConValorHora = this.consultores
-    .filter(consultor => this.consultoresAsignados.includes(consultor.id_consultor))
-    .map(consultor => ({
-      id_usuario: consultor.id_consultor,
-      id_proyecto: this.idProyectoSeleccionado,
-      valor_hora: consultor.valor_hora || 0 // Asegúrate de enviar un valor por defecto si no se ingresó
-    }));
 
-  console.log('Asignaciones a guardar:', asignacionesConValorHora);
+  guardarAsignaciones(asignaciones: any) {
+    // Construir las asignaciones con el valor por hora
+    const asignacionesConValorHora = this.consultores
+      .filter(consultor => this.consultoresAsignados.includes(consultor.id_consultor))
+      .map(consultor => ({
+        id_usuario: consultor.id_consultor,
+        id_proyecto: this.idProyectoSeleccionado,
+        valor_hora: consultor.valor_hora || 0 // Asegúrate de enviar un valor por defecto si no se ingresó
+      }));
 
-  // Verificar si la lista de asignaciones está vacía
-  if (!asignacionesConValorHora || asignacionesConValorHora.length === 0) {
-    console.warn('Advertencia: El proyecto quedará sin ninguna asignación.');
-    return;
-  }
+    console.log('Asignaciones a guardar:', asignacionesConValorHora);
 
-  // Enviar la lista de asignaciones al backend
-  this.http.post('/api/proyectos-asignados/actualizar', asignacionesConValorHora).subscribe(
-    res => {
-      console.log('Asignaciones actualizadas con éxito:', res);
-      this.mensajeAsignacion = 'Asignaciones guardadas correctamente.';
-    },
-    err => {
-      console.error('Error al guardar asignaciones:', err);
-      this.mensajeAsignacion = 'Error al guardar las asignaciones.';
+    // Verificar si la lista de asignaciones está vacía
+    if (!asignacionesConValorHora || asignacionesConValorHora.length === 0) {
+      console.warn('Advertencia: El proyecto quedará sin ninguna asignación.');
+      return;
     }
-  );
-}
 
-crearCliente() {
-  if (!this.nombreCliente.trim() || !this.contactoCliente.trim() || !this.emailCliente.trim() || !this.telefonoCliente.trim()) {
-    this.mensaje = 'Todos los campos son obligatorios.';
-    return;
+    // Enviar la lista de asignaciones al backend
+    this.http.post('http://localhost:3000/api/proyectos-asignados/actualizar', asignacionesConValorHora).subscribe(
+      res => {
+        console.log('Asignaciones actualizadas con éxito:', res);
+        this.mensajeAsignacion = 'Asignaciones guardadas correctamente.';
+      },
+      err => {
+        console.error('Error al guardar asignaciones:', err);
+        this.mensajeAsignacion = 'Error al guardar las asignaciones.';
+      }
+    );
   }
 
-  const nuevoCliente = {
-    nombre: this.nombreCliente,
-    contacto: this.contactoCliente,
-    email: this.emailCliente,
-    telefono: this.telefonoCliente
-  };
-
-  this.http.post('/api/clientes', nuevoCliente).subscribe(
-    res => {
-      this.mensaje = 'Cliente creado con éxito.';
-      this.limpiarFormulario(); // Limpiar los campos
-    },
-    err => {
-      console.error('Error al crear el cliente:', err);
-      this.mensaje = 'Error al crear el cliente.';
+  crearCliente() {
+    if (!this.nombreCliente.trim() || !this.contactoCliente.trim() || !this.emailCliente.trim() || !this.telefonoCliente.trim()) {
+      this.mensaje = 'Todos los campos son obligatorios.';
+      return;
     }
-  );
-}
 
-limpiarFormulario() {
-  this.nombreCliente = '';
-  this.contactoCliente = '';
-  this.emailCliente = '';
-  this.telefonoCliente = '';
-}
+    const nuevoCliente = {
+      nombre: this.nombreCliente,
+      contacto: this.contactoCliente,
+      email: this.emailCliente,
+      telefono: this.telefonoCliente
+    };
 
-// Método para crear un área
-crearArea() {
-  if (!this.nombreArea.trim()) {
-    this.mensajeArea = 'El nombre del área es obligatorio.';
-    return;
+    this.http.post('http://localhost:3000/api/clientes', nuevoCliente).subscribe(
+      res => {
+        this.mensaje = 'Cliente creado con éxito.';
+        this.limpiarFormulario(); // Limpiar los campos
+        this.cargarClientes(); // Recargar la lista de clientes
+      },
+      err => {
+        console.error('Error al crear el cliente:', err);
+        this.mensaje = 'Error al crear el cliente.';
+      }
+    );
   }
 
-  const nuevaArea = { nombre: this.nombreArea };
+  limpiarFormulario() {
+    this.nombreCliente = '';
+    this.contactoCliente = '';
+    this.emailCliente = '';
+    this.telefonoCliente = '';
+  }
 
-  this.http.post('/api/areas', nuevaArea).subscribe(
-    res => {
-      this.mensajeArea = 'Área creada con éxito.';
-      this.limpiarFormularioArea();
-    },
-    err => {
-      console.error('Error al crear el área:', err);
-      this.mensajeArea = 'Error al crear el área.';
+  // Método para crear un área
+  crearArea() {
+    if (!this.nombreArea.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'El nombre del área es obligatorio.'
+      });
+      return;
     }
-  );
-}
 
-limpiarFormularioArea() {
-  this.nombreArea = '';
-}
+    const nuevaArea = { nombre: this.nombreArea };
 
-// Método para crear un área
-crearCargo() {
-  if (!this.nombreCargo.trim()) {
-    this.mensajeCargo = 'El nombre del área es obligatorio.';
-    return;
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas crear esta área?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, crear',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.post('http://localhost:3000/api/areas', nuevaArea).subscribe(
+          res => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Área creada con éxito.'
+            });
+            this.limpiarFormularioArea();
+            this.cargarAreas(); // Recargar la lista de áreas
+          },
+          err => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al crear el área.'
+            });
+            console.error('Error al crear el área:', err);
+          }
+        );
+      }
+    });
   }
 
-  const nuevaArea = { nombre: this.nombreCargo };
+  limpiarFormularioArea() {
+    this.nombreArea = '';
+  }
 
-  this.http.post('/api/cargos', nuevaArea).subscribe(
-    res => {
-      this.mensajeCargo = 'Área creada con éxito.';
-      this.limpiarFormularioArea();
-    },
-    err => {
-      console.error('Error al crear el área:', err);
-      this.mensajeCargo = 'Error al crear el área.';
+  // Método para crear un cargo
+  crearCargo() {
+    if (!this.nombreCargo.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'El nombre del cargo es obligatorio.'
+      });
+      return;
     }
-  );
-}
 
-limpiarFormularioCargo() {
-  this.nombreCargo = '';
-}
+    const nuevoCargo = { nombre: this.nombreCargo };
 
-toggleConsultorSeleccionado(idConsultor: number, event: any) {
-  if (event.target.checked) {
-    this.consultoresSeleccionados.push(idConsultor);
-  } else {
-    this.consultoresSeleccionados = this.consultoresSeleccionados.filter(id => id !== idConsultor);
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas crear este cargo?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, crear',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.post('http://localhost:3000/api/cargos', nuevoCargo).subscribe(
+          res => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Cargo creado con éxito.'
+            });
+            this.limpiarFormularioCargo();
+            this.cargarCargos(); // Recargar la lista de cargos
+          },
+          err => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al crear el cargo.'
+            });
+            console.error('Error al crear el cargo:', err);
+          }
+        );
+      }
+    });
   }
-}
 
-crearProyecto() {
-  if (!this.nombreProyecto.trim() || !this.descripcionProyecto.trim() || !this.idClienteSeleccionado) {
-    this.mensajeProyecto = 'Todos los campos son obligatorios.';
-    return;
+  limpiarFormularioCargo() {
+    this.nombreCargo = '';
   }
 
-  const nuevoProyecto = {
-    nombre: this.nombreProyecto,
-    descripcion: this.descripcionProyecto,
-    estado: 'pendiente',
-    id_cliente: this.idClienteSeleccionado
-  };
-
-  this.http.post('/api/proyectos', nuevoProyecto).subscribe(
-    (res: any) => {
-      const idProyecto = res.id; // ID del proyecto recién creado
-      this.asignarConsultores(idProyecto);
-    },
-    err => {
-      console.error('Error al crear el proyecto:', err);
-      this.mensajeProyecto = 'Error al crear el proyecto.';
+  toggleConsultorSeleccionado(idConsultor: number, event: any) {
+    if (event.target.checked) {
+      this.consultoresSeleccionados.push(idConsultor);
+    } else {
+      this.consultoresSeleccionados = this.consultoresSeleccionados.filter(id => id !== idConsultor);
     }
-  );
-}
-
-asignarConsultores(idProyecto: number) {
-  const asignaciones = this.consultores
-    .filter(consultor => this.consultoresSeleccionados.includes(consultor.id_consultor))
-    .map(consultor => ({
-      id_usuario: consultor.id_consultor,
-      id_proyecto: idProyecto,
-      valor_hora: consultor.valor_hora || 0 // Asegúrate de enviar un valor por defecto si no se ingresó
-    }));
-
-  console.log('Datos enviados al backend para asignar consultores:', asignaciones);
-
-  this.http.post('/api/proyectos-asignados', asignaciones).subscribe(
-    res => {
-      this.mensajeProyecto = 'Proyecto creado y consultores asignados con éxito.';
-      this.limpiarFormularioProyecto();
-    },
-    err => {
-      console.error('Error al asignar consultores:', err);
-      this.mensajeProyecto = 'Error al asignar consultores.';
-    }
-  );
-}
-
-limpiarFormularioProyecto() {
-  this.nombreProyecto = '';
-  this.descripcionProyecto = '';
-  this.idClienteSeleccionado = null;
-  this.consultoresSeleccionados = [];
-}
-
-generarContraseña(): string {
-  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let contraseña = '';
-  for (let i = 0; i < 8; i++) {
-    contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
-  }
-  return contraseña; // Cambiar a contraseña generada
-}
-
-crearUsuario() {
-  if (!this.emailUsuario.trim()) {
-    this.mensajeUsuario = 'El correo electrónico es obligatorio.';
-    return;
   }
 
-  const contraseñaGenerada = this.generarContraseña();
-
-  // Enviar datos al backend
-  this.http.post('/api/usuarios', { email: this.emailUsuario, password: contraseñaGenerada }).subscribe(
-    res => {
-      this.mensajeUsuario = `Usuario creado con éxito. Contraseña generada: ${contraseñaGenerada}`;
-      this.emailUsuario = ''; // Limpiar el campo
-    },
-    err => {
-      console.error('Error al crear el usuario:', err);
-      this.mensajeUsuario = 'Error al crear el usuario.';
+  crearProyecto() {
+    if (!this.nombreProyecto.trim() || !this.idClienteSeleccionado) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Todos los campos son obligatorios.'
+      });
+      return;
     }
-  );
-}
 
-crearUsuarioYConsultor() {
+    const nuevoProyecto = {
+      nombre: this.nombreProyecto,
+      descripcion: this.descripcionProyecto,
+      estado: 'pendiente',
+      id_cliente: this.idClienteSeleccionado
+    };
 
-  if (
-    !this.emailUsuario.trim() ||
-    !this.nombreConsultor.trim() ||
-    !this.apellidoConsultor.trim() ||
-    !this.idCargoSeleccionado ||
-    !this.idRolSeleccionado ||
-    !this.idAreaSeleccionada
-  ) {
-    this.mensajeUsuario = 'Todos los campos son obligatorios.';
-    return;
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas crear este proyecto?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, crear',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.post('http://localhost:3000/api/proyectos', nuevoProyecto).subscribe(
+          (res: any) => {
+            const idProyecto = res.id; // ID del proyecto recién creado
+            this.asignarConsultores(idProyecto);
+            this.cargarProyectos(); // Recargar la lista de proyectos
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Proyecto creado con éxito.'
+            });
+          },
+          err => {
+            console.error('Error al crear el proyecto:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al crear el proyecto.'
+            });
+          }
+        );
+      }
+    });
   }
 
-  const contraseñaGenerada = this.generarContraseña();
+  asignarConsultores(idProyecto: number) {
+    const asignaciones = this.consultores
+      .filter(consultor => this.consultoresSeleccionados.includes(consultor.id_consultor))
+      .map(consultor => ({
+        id_usuario: consultor.id_consultor,
+        id_proyecto: idProyecto,
+        valor_hora: consultor.valor_hora || 0 // Asegúrate de enviar un valor por defecto si no se ingresó
+      }));
 
-  console.log('Datos a enviar:', {
-    email: this.emailUsuario,
-    password: contraseñaGenerada,
-    nombre: this.nombreConsultor,
-    apellido: this.apellidoConsultor,
-    id_cargo: this.idCargoSeleccionado,
-    id_rol: this.idRolSeleccionado,
-    id_area: this.idAreaSeleccionada
-  });
+    console.log('Datos enviados al backend para asignar consultores:', asignaciones);
 
-  // Enviar datos al backend
-  this.http.post('/api/usuarios-consultores', {
-    email: this.emailUsuario,
-    password: contraseñaGenerada,
-    nombre: this.nombreConsultor,
-    apellido: this.apellidoConsultor,
-    id_cargo: this.idCargoSeleccionado,
-    id_rol: this.idRolSeleccionado,
-    id_area: this.idAreaSeleccionada
-  }).subscribe(
-    res => {
-      this.mensajeUsuario = `Usuario y consultor creados con éxito. Contraseña generada: ${contraseñaGenerada}`;
-      this.limpiarFormularioUsuarioYConsultor();
-    },
-    err => {
-      console.error('Error al crear el usuario y consultor:', err);
-      this.mensajeUsuario = 'Error al crear el usuario y consultor.';
+    this.http.post('http://localhost:3000/api/proyectos-asignados', asignaciones).subscribe(
+      res => {
+        this.mensajeProyecto = 'Proyecto creado y consultores asignados con éxito.';
+        this.limpiarFormularioProyecto();
+        this.cargarConsultoresAsignados(); // Recargar la lista de consultores asignados
+      },
+      err => {
+        console.error('Error al asignar consultores:', err);
+        this.mensajeProyecto = 'Error al asignar consultores.';
+      }
+    );
+  }
+
+  limpiarFormularioProyecto() {
+    this.nombreProyecto = '';
+    this.descripcionProyecto = '';
+    this.idClienteSeleccionado = null;
+    this.consultoresSeleccionados = [];
+  }
+
+  generarContraseña(): string {
+    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let contraseña = '';
+    for (let i = 0; i < 8; i++) {
+      contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
     }
-  );
-}
+    return contraseña; // Cambiar a contraseña generada
+  }
 
-limpiarFormularioUsuarioYConsultor() {
-  this.emailUsuario = '';
-  this.nombreConsultor = '';
-  this.apellidoConsultor = '';
-  this.idCargoSeleccionado = null;
-  this.idRolSeleccionado = null;
-  this.idAreaSeleccionada = null;
-}
+  crearUsuario() {
+    if (!this.emailUsuario.trim()) {
+      this.mensajeUsuario = 'El correo electrónico es obligatorio.';
+      return;
+    }
+
+    const contraseñaGenerada = this.generarContraseña();
+
+    // Enviar datos al backend
+    this.http.post('http://localhost:3000/api/usuarios', { email: this.emailUsuario, password: contraseñaGenerada }).subscribe(
+      res => {
+        this.mensajeUsuario = `Usuario creado con éxito. Contraseña generada: ${contraseñaGenerada}`;
+        this.emailUsuario = ''; // Limpiar el campo
+      },
+      err => {
+        console.error('Error al crear el usuario:', err);
+        this.mensajeUsuario = 'Error al crear el usuario.';
+      }
+    );
+  }
+
+  crearUsuarioYConsultor() {
+    if (
+      !this.emailUsuario.trim() ||
+      !this.nombreConsultor.trim() ||
+      !this.apellidoConsultor.trim() ||
+      !this.idCargoSeleccionado ||
+      !this.idRolSeleccionado ||
+      !this.idAreaSeleccionada
+    ) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Todos los campos son obligatorios.'
+      });
+      return;
+    }
+
+    const contraseñaGenerada = this.generarContraseña();
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas crear este usuario y consultor?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, crear',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log('Datos a enviar:', {
+          email: this.emailUsuario,
+          password: contraseñaGenerada,
+          nombre: this.nombreConsultor,
+          apellido: this.apellidoConsultor,
+          id_cargo: this.idCargoSeleccionado,
+          id_rol: this.idRolSeleccionado,
+          id_area: this.idAreaSeleccionada
+        });
+
+        // Enviar datos al backend
+        this.http.post('http://localhost:3000/api/usuarios-consultores', {
+          email: this.emailUsuario,
+          password: contraseñaGenerada,
+          nombre: this.nombreConsultor,
+          apellido: this.apellidoConsultor,
+          id_cargo: this.idCargoSeleccionado,
+          id_rol: this.idRolSeleccionado,
+          id_area: this.idAreaSeleccionada
+        }).subscribe(
+          res => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: `Usuario y consultor creados con éxito. Contraseña generada: ${contraseñaGenerada}`
+            });
+            this.limpiarFormularioUsuarioYConsultor();
+            this.cargarConsultores(); // Recargar la lista de consultores
+          },
+          err => {
+            console.error('Error al crear el usuario y consultor:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al crear el usuario y consultor.'
+            });
+          }
+        );
+      }
+    });
+  }
+
+  cargarUsuarios(): void {
+    this.http.get<any[]>('http://localhost:3000/api/usuarios').subscribe(
+      res => {
+        this.usuarios = res;
+        console.log('Usuarios cargados:', this.usuarios); // Verificar los datos de usuarios
+      },
+      err => {
+        console.error('Error al cargar usuarios:', err);
+      }
+    );
+  }
+
+  usuarios: any[] = []; // Lista de usuarios
+  idUsuarioSeleccionado: number | null = null; // ID del usuario seleccionado
+  mensajeUsuarioConsultor: string = ''; // Mensaje de éxito o error
+
+  onUsuarioChange(event: any): void {
+    console.log('Usuario seleccionado:', this.idUsuarioSeleccionado);
+  }
+
+  eliminarProyecto(): void {
+    if (!this.idProyectoSeleccionado) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Debe seleccionar un proyecto para eliminar.'
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.delete(`http://localhost:3000/api/proyectos/${this.idProyectoSeleccionado}`).subscribe(
+          () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Proyecto eliminado con éxito.'
+            });
+            this.cargarProyectos(); // Recargar la lista de proyectos
+            this.idProyectoSeleccionado = null; // Limpiar selección
+          },
+          (err) => {
+            console.error('Error al eliminar el proyecto:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al eliminar el proyecto.'
+            });
+          }
+        );
+      }
+    });
+  }
+
+  eliminarCliente(): void {
+    if (!this.idClienteSeleccionado) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Debe seleccionar un cliente para eliminar.'
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.delete(`http://localhost:3000/api/clientes/${this.idClienteSeleccionado}`).subscribe(
+          () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Cliente eliminado con éxito.'
+            });
+            this.cargarClientes(); // Recargar la lista de clientes
+            this.idClienteSeleccionado = null; // Limpiar selección
+          },
+          (err) => {
+            console.error('Error al eliminar el cliente:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al eliminar el cliente.'
+            });
+          }
+        );
+      }
+    });
+  }
+
+  eliminarUsuarioConsultor(): void {
+
+    console.log('ID del usuario seleccionado para eliminar:', this.idUsuarioSeleccionado); // Verificar el ID seleccionado
+    if (!this.idUsuarioSeleccionado) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Debe seleccionar un usuario para eliminar.'
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.delete(`http://localhost:3000/api/usuarios-consultores/${this.idUsuarioSeleccionado}`).subscribe(
+          () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Usuario y consultor eliminados con éxito.'
+            });
+            this.cargarUsuarios(); // Recargar la lista de usuarios
+            this.cargarConsultoresAsignados(); // Recargar la lista de consultores asignados
+            this.idUsuarioSeleccionado = null; // Limpiar selección
+          },
+          (err) => {
+            console.error('Error al eliminar el usuario y consultor:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al eliminar el usuario y consultor.'
+            });
+          }
+        );
+      }
+    });
+  }
+
+  limpiarFormularioUsuarioYConsultor() {
+    this.emailUsuario = '';
+    this.nombreConsultor = '';
+    this.apellidoConsultor = '';
+    this.idCargoSeleccionado = null;
+    this.idRolSeleccionado = null;
+    this.idAreaSeleccionada = null;
+  }
 }

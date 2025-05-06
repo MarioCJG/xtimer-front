@@ -82,6 +82,7 @@ export class AuthService {
 
     cerrarSesion(): void {
         localStorage.removeItem('token');
+        localStorage.removeItem('primeraCargaHorasExtra')
     }
 
     estaAutenticado(): boolean {
@@ -89,7 +90,7 @@ export class AuthService {
     }
 
     cambiarPassword(data: { id_usuario: number; nuevaPassword: string }) {
-        return this.http.post('/api/auth/cambiar-password', data);
+        return this.http.post(`${this.apiUrl}//cambiar-password`, data);
     }
 
 }

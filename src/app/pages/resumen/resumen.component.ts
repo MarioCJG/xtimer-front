@@ -61,7 +61,8 @@ export class ResumenComponent {
   opcionesClientes: string[] = [];
   opcionesConsultores: string[] = [];
 
-  resumenSeleccionado: string = 'tablaSuperior'; // Variable para controlar qué resumen se muestra
+  resumenSeleccionado: string = 'tablaSuperior'; // Valor inicial
+
   mostrarResumen(resumen: string): void {
     this.resumenSeleccionado = resumen;
   }
@@ -73,6 +74,7 @@ export class ResumenComponent {
     this.cargarResumenHoras(); // Cargar el resumen de horas al
     this.cargarResumenHorasExtra();
   }
+  
 
   cargarResumenHoras() {
     this.horasExtraService.obtenerResumenHoras().subscribe(

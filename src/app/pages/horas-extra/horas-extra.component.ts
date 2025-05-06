@@ -108,6 +108,13 @@ export class HorasExtraComponent implements AfterViewInit {
     constructor(public darkModeService: DarkModeService, private horasExtraService: HorasExtraService, private authService: AuthService) { }
 
     async ngOnInit() {
+
+        const primeraCarga = localStorage.getItem('primeraCargaHorasExtra');
+        if (!primeraCarga) {
+            localStorage.setItem('primeraCargaHorasExtra', 'true');
+            window.location.reload(); // Recargar la página
+            return; // Detener la ejecución del resto del código en esta carga
+        }
     
         this.generarHorasAgrupadas();
         this.generarHorarios();
@@ -144,11 +151,6 @@ export class HorasExtraComponent implements AfterViewInit {
         this.darkModeService.aplicarModo();
 
         this.cargarComentarios();
-
-        if (await this.authService.primerRefresh() == false) {
-            console.log("refresh")
-            window.location.reload();
-        }
     }
     private inicializarCalendario() {
         const calendarApi = (this.fullCalendarComponent as any)?.getApi();
