@@ -8,7 +8,7 @@ import { UsuariosService } from './usuarios.service';
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = 'http://localhost:3000/api/auth';
+    private apiUrl = '/api/auth';
 
     private ingreso: boolean = false;
 

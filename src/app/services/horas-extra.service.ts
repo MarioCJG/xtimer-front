@@ -7,7 +7,7 @@ import { HorasExtra } from '../models/hora-extra.model';
     providedIn: 'root'
 })
 export class HorasExtraService {
-    private apiUrl = 'http://localhost:3000/api';
+    private apiUrl = '/api';
 
     constructor(private http: HttpClient) { }
 
@@ -24,7 +24,7 @@ export class HorasExtraService {
     }
 
     obtenerHorasExtraPorUsuario(id_usuario: number) {
-        return this.http.get<any[]>(`/api/horas-extra/${id_usuario}`);
+        return this.http.get<any[]>(`${this.apiUrl}/horas-extra/${id_usuario}`);
     }
 
     editarHorasExtra(hora: HorasExtra): Observable<any> {

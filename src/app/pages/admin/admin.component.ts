@@ -109,7 +109,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarCargos() {
-    this.http.get<any[]>('http://localhost:3000/api/cargos').subscribe(
+    this.http.get<any[]>('/api/cargos').subscribe(
       res => {
         this.cargos = res;
         console.log('Cargos cargados:', this.cargos); // Verificar los datos de cargos
@@ -121,7 +121,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarRoles() {
-    this.http.get<any[]>('http://localhost:3000/api/roles').subscribe(
+    this.http.get<any[]>('/api/roles').subscribe(
       res => {
         this.roles = res;
         console.log('Roles cargados:', this.roles); // Verificar los datos de roles
@@ -133,7 +133,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarAreas() {
-    this.http.get<any[]>('http://localhost:3000/api/areas').subscribe(
+    this.http.get<any[]>('/api/areas').subscribe(
       res => {
         this.areas = res;
         console.log('Áreas cargadas:', this.areas); // Verificar los datos de áreas
@@ -163,7 +163,7 @@ export class AdminComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.http.delete(`http://localhost:3000/api/areas/${this.idAreaSeleccionada}`).subscribe(
+        this.http.delete(`/api/areas/${this.idAreaSeleccionada}`).subscribe(
           () => {
             Swal.fire({
               icon: 'success',
@@ -205,7 +205,7 @@ export class AdminComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.http.delete(`http://localhost:3000/api/cargos/${this.idCargoSeleccionado}`).subscribe(
+        this.http.delete(`/api/cargos/${this.idCargoSeleccionado}`).subscribe(
           () => {
             Swal.fire({
               icon: 'success',
@@ -229,7 +229,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarClientes() {
-    this.http.get<any[]>('http://localhost:3000/api/clientes').subscribe(
+    this.http.get<any[]>('/api/clientes').subscribe(
       res => {
         this.clientes = res;
       },
@@ -240,7 +240,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarConsultores() {
-    this.http.get<any[]>('http://localhost:3000/api/consultores').subscribe(
+    this.http.get<any[]>('/api/consultores').subscribe(
       res => {
         this.consultores = res;
       },
@@ -251,7 +251,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarProyectos() {
-    this.http.get<any[]>('http://localhost:3000/api/proyectos').subscribe(
+    this.http.get<any[]>('/api/proyectos').subscribe(
       res => {
         this.proyectos = res;
       },
@@ -265,7 +265,7 @@ export class AdminComponent implements OnInit {
     if (!this.idProyectoSeleccionado) return;
 
     this.http
-      .get<any[]>(`http://localhost:3000/api/proyectos-asignados/${this.idProyectoSeleccionado}`)
+      .get<any[]>(`/api/proyectos-asignados/${this.idProyectoSeleccionado}`)
       .subscribe(
         res => {
           // Actualizar la lista de consultores asignados con sus valores por hora
@@ -327,7 +327,7 @@ export class AdminComponent implements OnInit {
     }
 
     // Enviar la lista de asignaciones al backend
-    this.http.post('http://localhost:3000/api/proyectos-asignados/actualizar', asignacionesConValorHora).subscribe(
+    this.http.post('/api/proyectos-asignados/actualizar', asignacionesConValorHora).subscribe(
       res => {
         console.log('Asignaciones actualizadas con éxito:', res);
         this.mensajeAsignacion = 'Asignaciones guardadas correctamente.';
@@ -341,7 +341,11 @@ export class AdminComponent implements OnInit {
 
   crearCliente() {
     if (!this.nombreCliente.trim() || !this.contactoCliente.trim() || !this.emailCliente.trim() || !this.telefonoCliente.trim()) {
-      this.mensaje = 'Todos los campos son obligatorios.';
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Todos los campos son obligatorios.'
+      });
       return;
     }
 
@@ -352,17 +356,36 @@ export class AdminComponent implements OnInit {
       telefono: this.telefonoCliente
     };
 
-    this.http.post('http://localhost:3000/api/clientes', nuevoCliente).subscribe(
-      res => {
-        this.mensaje = 'Cliente creado con éxito.';
-        this.limpiarFormulario(); // Limpiar los campos
-        this.cargarClientes(); // Recargar la lista de clientes
-      },
-      err => {
-        console.error('Error al crear el cliente:', err);
-        this.mensaje = 'Error al crear el cliente.';
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas crear este cliente?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, crear',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.post('/api/clientes', nuevoCliente).subscribe(
+          res => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Cliente creado con éxito.'
+            });
+            this.limpiarFormulario(); // Limpiar los campos
+            this.cargarClientes(); // Recargar la lista de clientes
+          },
+          err => {
+            console.error('Error al crear el cliente:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al crear el cliente.'
+            });
+          }
+        );
       }
-    );
+    });
   }
 
   limpiarFormulario() {
@@ -394,7 +417,7 @@ export class AdminComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.http.post('http://localhost:3000/api/areas', nuevaArea).subscribe(
+        this.http.post('/api/areas', nuevaArea).subscribe(
           res => {
             Swal.fire({
               icon: 'success',
@@ -443,7 +466,7 @@ export class AdminComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.http.post('http://localhost:3000/api/cargos', nuevoCargo).subscribe(
+        this.http.post('/api/cargos', nuevoCargo).subscribe(
           res => {
             Swal.fire({
               icon: 'success',
@@ -504,7 +527,7 @@ export class AdminComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.http.post('http://localhost:3000/api/proyectos', nuevoProyecto).subscribe(
+        this.http.post('/api/proyectos', nuevoProyecto).subscribe(
           (res: any) => {
             const idProyecto = res.id; // ID del proyecto recién creado
             this.asignarConsultores(idProyecto);
@@ -539,17 +562,38 @@ export class AdminComponent implements OnInit {
 
     console.log('Datos enviados al backend para asignar consultores:', asignaciones);
 
-    this.http.post('http://localhost:3000/api/proyectos-asignados', asignaciones).subscribe(
-      res => {
-        this.mensajeProyecto = 'Proyecto creado y consultores asignados con éxito.';
-        this.limpiarFormularioProyecto();
-        this.cargarConsultoresAsignados(); // Recargar la lista de consultores asignados
-      },
-      err => {
-        console.error('Error al asignar consultores:', err);
-        this.mensajeProyecto = 'Error al asignar consultores.';
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas asignar los consultores seleccionados a este proyecto?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, asignar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.post('/api/proyectos-asignados', asignaciones).subscribe(
+          res => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Proyecto creado y consultores asignados con éxito.'
+            });
+            this.mensajeProyecto = 'Proyecto creado y consultores asignados con éxito.';
+            this.limpiarFormularioProyecto();
+            this.cargarConsultoresAsignados(); // Recargar la lista de consultores asignados
+          },
+          err => {
+            console.error('Error al asignar consultores:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al asignar consultores.'
+            });
+            this.mensajeProyecto = 'Error al asignar consultores.';
+          }
+        );
       }
-    );
+    });
   }
 
   limpiarFormularioProyecto() {
@@ -570,23 +614,45 @@ export class AdminComponent implements OnInit {
 
   crearUsuario() {
     if (!this.emailUsuario.trim()) {
-      this.mensajeUsuario = 'El correo electrónico es obligatorio.';
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'El correo electrónico es obligatorio.'
+      });
       return;
     }
 
     const contraseñaGenerada = this.generarContraseña();
 
-    // Enviar datos al backend
-    this.http.post('http://localhost:3000/api/usuarios', { email: this.emailUsuario, password: contraseñaGenerada }).subscribe(
-      res => {
-        this.mensajeUsuario = `Usuario creado con éxito. Contraseña generada: ${contraseñaGenerada}`;
-        this.emailUsuario = ''; // Limpiar el campo
-      },
-      err => {
-        console.error('Error al crear el usuario:', err);
-        this.mensajeUsuario = 'Error al crear el usuario.';
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas crear este usuario?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, crear',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.post('/api/usuarios', { email: this.emailUsuario, password: contraseñaGenerada }).subscribe(
+          res => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: `Usuario creado con éxito. Contraseña generada: ${contraseñaGenerada}`
+            });
+            this.emailUsuario = ''; // Limpiar el campo
+          },
+          err => {
+            console.error('Error al crear el usuario:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error al crear el usuario.'
+            });
+          }
+        );
       }
-    );
+    });
   }
 
   crearUsuarioYConsultor() {
@@ -628,7 +694,7 @@ export class AdminComponent implements OnInit {
         });
 
         // Enviar datos al backend
-        this.http.post('http://localhost:3000/api/usuarios-consultores', {
+        this.http.post('/api/usuarios-consultores', {
           email: this.emailUsuario,
           password: contraseñaGenerada,
           nombre: this.nombreConsultor,
@@ -660,7 +726,7 @@ export class AdminComponent implements OnInit {
   }
 
   cargarUsuarios(): void {
-    this.http.get<any[]>('http://localhost:3000/api/usuarios').subscribe(
+    this.http.get<any[]>('/api/usuarios').subscribe(
       res => {
         this.usuarios = res;
         console.log('Usuarios cargados:', this.usuarios); // Verificar los datos de usuarios
@@ -698,7 +764,7 @@ export class AdminComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.http.delete(`http://localhost:3000/api/proyectos/${this.idProyectoSeleccionado}`).subscribe(
+        this.http.delete(`/api/proyectos/${this.idProyectoSeleccionado}`).subscribe(
           () => {
             Swal.fire({
               icon: 'success',
@@ -740,7 +806,7 @@ export class AdminComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.http.delete(`http://localhost:3000/api/clientes/${this.idClienteSeleccionado}`).subscribe(
+        this.http.delete(`/api/clientes/${this.idClienteSeleccionado}`).subscribe(
           () => {
             Swal.fire({
               icon: 'success',
@@ -784,7 +850,7 @@ export class AdminComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.http.delete(`http://localhost:3000/api/usuarios-consultores/${this.idUsuarioSeleccionado}`).subscribe(
+        this.http.delete(`/api/usuarios-consultores/${this.idUsuarioSeleccionado}`).subscribe(
           () => {
             Swal.fire({
               icon: 'success',

@@ -74,14 +74,19 @@ export class ResumenComponent {
     this.cargarResumenHoras(); // Cargar el resumen de horas al
     this.cargarResumenHorasExtra();
   }
-  
+
 
   cargarResumenHoras() {
     this.horasExtraService.obtenerResumenHoras().subscribe(
       res => {
-        console.log('Datos recibidos del backend:', res);
+        console.log('>Datos recibidos del backend:', res);
 
-        this.resumenHoras = res; // Asignar los datos recibidos a la variable resumenHoras
+        // Formatear los campos numéricos y las fechas
+        this.resumenHoras = res.map(hora => ({
+          ...hora,
+          horas_extras: parseFloat(hora.horas_extras).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+          total_horas: parseFloat(hora.total_horas).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+        }));
 
         this.horasFiltradas = [...this.resumenHoras]; // Inicializar las horas filtradas con todos los datos
 
@@ -153,8 +158,17 @@ export class ResumenComponent {
   cargarResumenHorasExtra(): void {
     this.horasExtraService.obtenerResumenHorasExtra().subscribe(
       (data) => {
-        this.resumenHorasExtra = data;
-        this.resumenHorasExtraFiltradas = data; // Inicialmente, los datos filtrados son los mismos que los originales
+        console.log('Datos recibidos del backend:', data);
+
+        // Formatear los campos numéricos
+        this.resumenHorasExtra = data.map(item => ({
+          ...item,
+          horas_extras: parseFloat(item.horas_extras).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+          horas_normales: parseFloat(item.horas_normales).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+          total_horas: parseFloat(item.total_horas).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+        }));
+
+        this.resumenHorasExtraFiltradas = [...this.resumenHorasExtra]; // Inicialmente, los datos filtrados son los mismos que los originales
         this.calcularTotales();
         this.generarOpcionesFiltros(); // Generar las opciones para los filtros
       },
@@ -184,11 +198,11 @@ export class ResumenComponent {
       const cumpleConsultores = this.filtroConsultores
         ? resumen.consultores.split(', ').includes(this.filtroConsultores)
         : true;
-      
-        
-        return cumpleFechaDesde && cumpleFechaHasta && cumpleProyecto && cumpleCliente && cumpleConsultores;
-      });
-      this.calcularTotales(); // Calcular totales después de aplicar los filtros
+
+
+      return cumpleFechaDesde && cumpleFechaHasta && cumpleProyecto && cumpleCliente && cumpleConsultores;
+    });
+    this.calcularTotales(); // Calcular totales después de aplicar los filtros
   }
 
   calcularTotales(): void {
@@ -208,7 +222,7 @@ export class ResumenComponent {
       console.log(`El número ${this.totalHorasNormales} no tiene una parte decimal.`);
     }
 
-    if(parteDecimalExtra > 0) {
+    if (parteDecimalExtra > 0) {
       this.parteDecimalHorasExtra = "30";
     }
     else {
