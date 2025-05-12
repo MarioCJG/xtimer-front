@@ -97,14 +97,16 @@ export class AprobacionesComponent implements OnInit {
             res => {
                 console.log('Datos recibidos del backend:', res);
 
-                // Filtrar las horas con horas_extras > 0 y aprobacion != 'aprobado'
+                // Filtrar las horas con horas_extras > 0 y aprobacion == 'pendiente'
                 this.resumenHoras = res.filter(hora =>
                     !isNaN(parseFloat(hora.horas_extras)) &&
                     parseFloat(hora.horas_extras) > 0 &&
-                    hora.aprobacion?.trim().toLowerCase() !== 'aprobado'
+                    hora.aprobacion?.trim().toLowerCase() === 'pendiente'
                 );
 
-                this.horasFiltradas = [...this.resumenHoras]; // Inicializar las horas filtradas con todos los datos
+                // No es necesario convertir la fecha, ya que viene en formato ISO 8601
+                this.horasFiltradas = [...this.resumenHoras];
+                console.log('Resumen de horas filtradas:', this.horasFiltradas);
 
                 // Generar opciones únicas para los filtros
                 this.opcionesCargo = [...new Set(this.resumenHoras.map(hora => hora.cargo_nombre))];

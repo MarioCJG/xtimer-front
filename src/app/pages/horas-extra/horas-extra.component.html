@@ -48,7 +48,7 @@
           <span>más de 8 horas</span>
         </div>
       </div>
-      
+
     </div>
 
     <div class="d-flex justify-content-center gap-4 align-items-center flex-wrap">
@@ -113,13 +113,13 @@
 
         <tbody>
           <tr *ngFor="let proyecto of proyectosFiltrados; let rowIndex = index">
-            <td 
-              class="proyecto-cell" 
-              [ngClass]="{ 'comentario-presente': proyecto.tieneComentario }" 
+
+            <td class="proyecto-cell position-relative text-start" [ngClass]="{ 'comentario-presente': proyecto.tieneComentario }"
               (click)="seleccionarProyecto(proyecto)">
-              {{ proyecto.nombre_proyecto }}
+              {{ proyecto.nombre_cliente }} - {{ proyecto.nombre_proyecto }}
               <span *ngIf="proyecto.tieneComentario" class="comentario-icon">💬</span>
             </td>
+
             <td *ngFor="let cell of copiaGrid[rowIndex]; let colIndex = index" class="hora-cell" [ngClass]="{
                   selected:
                     cell.selected &&

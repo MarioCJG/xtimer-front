@@ -24,6 +24,8 @@ import { AfterViewInit } from '@angular/core';
 import { DarkModeService } from '../../services/dark-mode.service';
 
 import Swal from 'sweetalert2';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 
 
 @Component({

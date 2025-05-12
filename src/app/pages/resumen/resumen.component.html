@@ -144,7 +144,7 @@
                     <td>{{ hora.consultor_nombre }}</td>
                     <td>{{ hora.cargo_nombre }}</td>
                     <td>{{ hora.area_nombre }}</td>
-                    <td>{{ hora.fecha | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ hora.fecha}}</td>
                     <td>{{ hora.total_horas }}</td>
                     <td>{{ hora.horas_extras }}</td>
                     <td>{{ hora.aprobacion }}</td>
@@ -267,7 +267,7 @@
             </thead>
             <tbody>
                 <tr *ngFor="let resumen of resumenHorasExtraFiltradas">
-                    <td>{{ resumen.fecha | date: 'dd-MM-yyyy' }}</td>
+                    <td>{{ resumen.fecha}}</td>
                     <td>{{ resumen.proyecto_nombre }}</td>
                     <td>{{ resumen.cliente_nombre }}</td>
                     <td>{{ resumen.horas_normales }}</td>

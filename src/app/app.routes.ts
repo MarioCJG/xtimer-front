@@ -11,12 +11,29 @@ import { CambioPasswordComponent } from './pages/cambio-password/cambio-password
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' }, //Redireccion a login
-    { path: 'cambio-password', component: CambioPasswordComponent },
+    {
+        path: 'cambio-password', component: CambioPasswordComponent, canActivate: [authGuard],
+        data: { roles: ['Usuario', 'Administrador'] }
+    },
     { path: 'login', component: LoginComponent },
-    { path: 'registro', component: RegistroComponent }, 
-    { path: 'horas-extra', component: HorasExtraComponent, canActivate: [authGuard] },
-    { path: 'aprobaciones', component: AprobacionesComponent, canActivate: [authGuard] },
-    { path: 'admin', component: AdminComponent, canActivate: [authGuard] },
-    { path: 'resumen', component: ResumenComponent, canActivate: [authGuard] },
-    { path: '**', redirectTo: '', pathMatch: 'full'  }, //Redireccion si la ruta no existe 
+    { path: 'registro', component: RegistroComponent },
+    {
+        path: 'horas-extra', component: HorasExtraComponent, canActivate: [authGuard],
+        data: { roles: ['Usuario', 'Administrador'] }
+    },
+    {
+        path: 'aprobaciones', component: AprobacionesComponent, canActivate: [authGuard],
+        data: { roles: ['Administrador'] }
+    },
+    {
+        path: 'admin',
+        loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent),
+        canActivate: [authGuard],
+        data: { roles: ['Administrador'] } // Solo los administradores pueden acceder
+    },
+    {
+        path: 'resumen', component: ResumenComponent, canActivate: [authGuard],
+        data: { roles: ['Administrador'] }
+    },
+    { path: '**', redirectTo: '', pathMatch: 'full' }, //Redireccion si la ruta no existe 
 ];
