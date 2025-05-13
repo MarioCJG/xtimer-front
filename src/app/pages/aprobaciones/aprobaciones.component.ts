@@ -54,8 +54,9 @@ export class AprobacionesComponent implements OnInit {
         // Actualizar la celda seleccionada
         this.celdaSeleccionada = id_resumen;
 
-        // Formatear la fecha al formato YYYY-MM-DD
-        const fechaFormateada = new Date(fecha).toISOString().split('T')[0];
+        // Convertir fecha de "dd-MM-yyyy" a "yyyy-MM-dd"
+        const [dia, mes, anio] = fecha.split('-');
+        const fechaFormateada = `${anio}-${mes}-${dia}`;
         console.log('Fecha formateada:', fechaFormateada);
 
         // Obtener los detalles de horas extra
@@ -72,6 +73,7 @@ export class AprobacionesComponent implements OnInit {
                 if (fechaFormateada) {
                     this.horasExtraService.obtenerComentariosPorResumen(id_resumen, fechaFormateada).subscribe(
                         res => {
+                            console.log('>Comentarios obtenidos:', res);
                             this.comentarios = res.map((comentario: any) => ({
                                 proyecto_nombre: comentario.proyecto_nombre,
                                 comentario: comentario.comentario,

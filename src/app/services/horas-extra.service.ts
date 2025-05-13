@@ -7,7 +7,7 @@ import { HorasExtra } from '../models/hora-extra.model';
     providedIn: 'root'
 })
 export class HorasExtraService {
-    private apiUrl = '/api';
+    private apiUrl = 'http://localhost:3000/api';
 
     constructor(private http: HttpClient) { }
 

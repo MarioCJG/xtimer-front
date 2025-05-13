@@ -19,15 +19,12 @@ export const authGuard: CanActivateFn = (route, state) => {
     // Verificar el rol del usuario
     return authService.obtenerRol().pipe(
         map((rolUsuario) => {
-            console.log('Rol del usuario:', rolUsuario);
-            console.log('Roles permitidos:', rolesPermitidos);
 
             if (rolesPermitidos && !rolesPermitidos.includes(rolUsuario)) {
                 console.log('Redirigiendo a /horas-extra');
                 router.navigate(['/horas-extra']);
                 return false;
             }
-            console.log('Acceso permitido');
             return true;
         }),
         catchError((error) => {

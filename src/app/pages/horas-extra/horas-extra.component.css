@@ -20,10 +20,11 @@
   font-weight: 500;
   background-color: #f8f9fa;
   cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal; /* Permitir saltos de línea */
+  overflow: visible; /* Mostrar todo el contenido */
+  text-overflow: unset; /* Desactivar el truncamiento con "..." */
   padding-left: 6px;
+  word-wrap: break-word; /* Permitir que las palabras largas se dividan */
 }
 
 .hora-cell {
