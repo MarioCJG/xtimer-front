@@ -3,6 +3,10 @@ import { HorasExtraService } from '../../services/horas-extra.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 
 @Component({
@@ -63,9 +67,94 @@ export class ResumenComponent {
 
   resumenSeleccionado: string = 'tablaSuperior'; // Valor inicial
 
+  pageSize = 1;
+  currentPageConsultores = 1;
+  currentPageProyectos = 1;
+
+  get totalPagesConsultores() {
+    return Math.ceil(this.horasFiltradas.length / this.pageSize);
+  }
+  get totalPagesProyectos() {
+    return Math.ceil(this.resumenHorasExtraFiltradas.length / this.pageSize);
+  }
+
+  get pagedHorasFiltradas() {
+    const start = (this.currentPageConsultores - 1) * this.pageSize;
+    return this.horasFiltradas.slice(start, start + this.pageSize);
+  }
+  get pagedResumenHorasExtraFiltradas() {
+    const start = (this.currentPageProyectos - 1) * this.pageSize;
+    return this.resumenHorasExtraFiltradas.slice(start, start + this.pageSize);
+  }
+
+  get paginasPaginacionProyectos(): number[] {
+    const total = this.totalPagesProyectos;
+    const actual = this.currentPageProyectos;
+    const delta = 2; // cantidad de páginas antes y después de la actual
+    const range = [];
+    const rangeWithDots = [];
+    let l: number = 0;
+
+    for (let i = 1; i <= total; i++) {
+      if (i === 1 || i === total || (i >= actual - delta && i <= actual + delta)) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l !== 0) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push(-1); // -1 será el "..."
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+    return rangeWithDots;
+  }
+
+  get paginasPaginacionConsultores(): number[] {
+    const total = this.totalPagesConsultores;
+    const actual = this.currentPageConsultores;
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
+    let l: number = 0;
+
+    for (let i = 1; i <= total; i++) {
+      if (i === 1 || i === total || (i >= actual - delta && i <= actual + delta)) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l !== 0) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push(-1);
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+    return rangeWithDots;
+  }
+
+  changePageConsultores(page: number) {
+    this.currentPageConsultores = page;
+  }
+  changePageProyectos(page: number) {
+    this.currentPageProyectos = page;
+  }
+
   mostrarResumen(resumen: string): void {
     this.resumenSeleccionado = resumen;
   }
+
+
 
 
   constructor(private horasExtraService: HorasExtraService) { }
@@ -270,5 +359,95 @@ export class ResumenComponent {
     console.log('Horas filtradas:', this.horasFiltradas);
     this.resumirHorasFiltradas();
 
+  }
+
+
+  // Exportar tabla de consultores o proyectos según el resumen seleccionado
+  exportarExcel(resumen: 'consultores' | 'proyectos') {
+    let data: any[] = [];
+    let nombreArchivo = '';
+
+    if (resumen === 'consultores') {
+      data = this.horasFiltradas.map(hora => ({
+        'ID Resumen': hora.id_resumen,
+        'Consultor': hora.consultor_nombre,
+        'Cargo': hora.cargo_nombre,
+        'Área': hora.area_nombre,
+        'Fecha': hora.fecha,
+        'Total Horas': hora.total_horas,
+        'Horas Extras': hora.horas_extras,
+        'Aprobación': hora.aprobacion
+      }));
+      nombreArchivo = 'resumen_consultores.xlsx';
+    } else {
+      data = this.resumenHorasExtraFiltradas.map(resumen => ({
+        'Fecha': resumen.fecha,
+        'Proyecto': resumen.proyecto_nombre,
+        'Cliente': resumen.cliente_nombre,
+        'Horas Normales': resumen.horas_normales,
+        'Horas Extras': resumen.horas_extras,
+        'Total Horas': resumen.total_horas,
+        'Consultores': resumen.consultores,
+        'Comentarios': resumen.comentarios
+      }));
+      nombreArchivo = 'resumen_proyectos.xlsx';
+    }
+
+    if (data.length === 0) {
+      console.warn('No hay datos para exportar.');
+      return;
+    }
+
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Resumen');
+    const excelBuffer: any = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, nombreArchivo);
+  }
+
+  exportarPDF(resumen: 'consultores' | 'proyectos') {
+    const doc = new jsPDF();
+    let head: string[][] = [];
+    let body: any[][] = [];
+    let nombreArchivo = '';
+
+    if (resumen === 'consultores') {
+      head = [['ID Resumen', 'Consultor', 'Cargo', 'Área', 'Fecha', 'Total Horas', 'Horas Extras', 'Aprobación']];
+      body = this.horasFiltradas.map(hora => [
+        hora.id_resumen,
+        hora.consultor_nombre,
+        hora.cargo_nombre,
+        hora.area_nombre,
+        hora.fecha,
+        hora.total_horas,
+        hora.horas_extras,
+        hora.aprobacion
+      ]);
+      nombreArchivo = 'resumen_consultores.pdf';
+      doc.text('Resumen de Consultores', 10, 10);
+    } else {
+      head = [['Fecha', 'Proyecto', 'Cliente', 'Horas Normales', 'Horas Extras', 'Total Horas', 'Consultores', 'Comentarios']];
+      body = this.resumenHorasExtraFiltradas.map(resumen => [
+        resumen.fecha,
+        resumen.proyecto_nombre,
+        resumen.cliente_nombre,
+        resumen.horas_normales,
+        resumen.horas_extras,
+        resumen.total_horas,
+        resumen.consultores,
+        resumen.comentarios
+      ]);
+      nombreArchivo = 'resumen_proyectos.pdf';
+      doc.text('Resumen de Proyectos', 10, 10);
+    }
+
+    autoTable(doc, {
+      head,
+      body,
+      startY: 20
+    });
+
+    doc.save(nombreArchivo);
   }
 }

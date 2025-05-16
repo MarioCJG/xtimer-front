@@ -120,9 +120,33 @@
                         (change)="aplicarFiltros()" />
                 </div>
             </div>
+
+            <!-- Ejemplo de botones alineados a la derecha -->
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-success me-2" (click)="exportarExcel('consultores')">
+                    Exportar a Excel
+                </button>
+                <button class="btn btn-danger" (click)="exportarPDF('consultores')">
+                    Exportar a PDF
+                </button>
+            </div>
         </div>
 
+        <!-- Paginación para Consultores -->
+        <div class="d-flex justify-content-center mb-4">
+            <nav *ngIf="totalPagesConsultores > 1">
+                <ul class="pagination">
 
+                    <li class="page-item" *ngFor="let page of paginasPaginacionConsultores"
+                        [class.active]="currentPageConsultores === page" [class.disabled]="page === -1">
+                        <button class="page-link" *ngIf="page !== -1" (click)="changePageConsultores(page)">{{ page
+                            }}</button>
+                        <span class="page-link" *ngIf="page === -1">…</span>
+                    </li>
+
+                </ul>
+            </nav>
+        </div>
 
         <!-- Tabla para mostrar el resumen de horas -->
         <table class="table table-bordered table-dark mt-4">
@@ -139,7 +163,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let hora of horasFiltradas">
+                <tr *ngFor="let hora of pagedHorasFiltradas">
                     <td>{{ hora.id_resumen }}</td>
                     <td>{{ hora.consultor_nombre }}</td>
                     <td>{{ hora.cargo_nombre }}</td>
@@ -151,6 +175,7 @@
                 </tr>
             </tbody>
         </table>
+
     </div>
 
     <div *ngIf="resumenSeleccionado === 'tablaInferior'" class="contenido-aprobaciones">
@@ -247,9 +272,38 @@
                             </option>
                         </select>
                     </div>
+
+
                 </div>
+
             </div>
+            <!-- Ejemplo de botones alineados a la derecha -->
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-success me-2" (click)="exportarExcel('proyectos')">
+                    Exportar a Excel
+                </button>
+                <button class="btn btn-danger" (click)="exportarPDF('proyectos')">
+                    Exportar a PDF
+                </button>
+            </div>
+
+
         </div>
+
+        <!-- Paginación para Proyectos -->
+        <div class="d-flex justify-content-center mb-4">
+            <nav *ngIf="totalPagesProyectos > 1">
+                <ul class="pagination">
+                    <li class="page-item" *ngFor="let page of paginasPaginacionProyectos"
+                        [class.active]="currentPageProyectos === page" [class.disabled]="page === -1">
+                        <button class="page-link" *ngIf="page !== -1" (click)="changePageProyectos(page)">{{ page
+                            }}</button>
+                        <span class="page-link" *ngIf="page === -1">…</span>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
 
         <!-- Nueva tabla para mostrar el resumen de horas extra -->
         <table class="table table-bordered table-dark mt-4">
@@ -267,7 +321,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let resumen of resumenHorasExtraFiltradas">
+                <tr *ngFor="let resumen of pagedResumenHorasExtraFiltradas">
                     <td>{{ resumen.fecha}}</td>
                     <td>{{ resumen.proyecto_nombre }}</td>
                     <td>{{ resumen.cliente_nombre }}</td>
@@ -279,7 +333,9 @@
                     <td>{{ resumen.comentarios }}</td>
                 </tr>
             </tbody>
+
         </table>
+
     </div>
 
 </div>
